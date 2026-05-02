@@ -1,0 +1,146 @@
+[
+  {
+    "id": 1,
+    "title": "Usaha Pengembangan Madrasah",
+    "subTasks": [
+      {
+        "code": "1.1",
+        "title": "Mengembangkan madrasah sesuai dengan kebutuhan.",
+        "indicators": [
+          {
+            "code": "1.1.1",
+            "title": "Mampu menggembangkan struktur organisasi yang sesuai dengan kebutuhan program."
+          },
+          {
+            "code": "1.1.2",
+            "title": "Mampu menempatkan personalia yang sesuai dengan kebutuhan."
+          },
+          {
+            "code": "1.1.3",
+            "title": "Mampu mengembangkan pedoman dan prosedur kerja organisasi madrasah."
+          }
+        ]
+      },
+      {
+        "code": "1.2",
+        "title": "Mengelola perubahan dan pengembangan madrasah menuju organisasi pembelajar yang efektif.",
+        "indicators": [
+          {
+            "code": "1.2.1",
+            "title": "Mampu mengembangkan program baru untuk meningkatkan pencapaian sasaran madrasah."
+          },
+          {
+            "code": "1.2.2",
+            "title": "Mampu dan terampil dalam membangun tim kerja yang efektif untuk mendapatkan iklim, budaya, dan kinerja madrasah."
+          },
+          {
+            "code": "1.2.3",
+            "title": "Mampu menerapkan berbagai teknik pembaharuan dalam pengelolaan pembelajaran."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Pelaksanaan Tugas Manajerial",
+    "subTasks": [
+      {
+        "code": "2.1",
+        "title": "Menyusun perencanaan madrasah untuk berbagai tingkatan perencanaan.",
+        "indicators": [
+          {
+            "code": "2.1.1",
+            "title": "Mampu mengembangkan RKJM, RKT/RKAM dengan program lainnya berdasarkan data hasil evaluasi dalam pemenuhan 8 SNP."
+          },
+          {
+            "code": "2.1.2",
+            "title": "Mampu merumuskan visi-misi sebagai arah pengembangan program RKJM, RKT/RKAS dan program lainnya."
+          }
+        ]
+      },
+      {
+        "code": "2.2",
+        "title": "Memimpin madrasah dalam rangka pendayagunaan sumber daya madrasah secara optimal.",
+        "indicators": [
+          {
+            "code": "2.2.1",
+            "title": "Mampu memberikan contoh disiplin; hadir tepat waktu, disiplin menggunakan waktu, dan tepat waktu mengakhiri pekerjaan."
+          },
+          {
+            "code": "2.2.2",
+            "title": "Mampu melaksanakan peraturan sesuai dengan ketentuan yang berlaku."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Pengembangan Kewirausahaan",
+    "subTasks": [
+      {
+        "code": "3.1",
+        "title": "Menciptakan inovasi yang berguna bagi pengembangan madrasah.",
+        "indicators": [
+          {
+            "code": "3.1.1",
+            "title": "Mampu menciptakan inovasi yang berguna bagi pengembangan madrasah."
+          },
+          {
+            "code": "3.1.2",
+            "title": "Memiliki motivasi yang kuat untuk sukses dalam melaksanakan tugas pokok dan fungsinya sebagai pemimpin madrasah."
+          }
+        ]
+      },
+      {
+        "code": "3.2",
+        "title": "Bekerja keras untuk mencapai keberhasilan madrasah sebagai organisasi pembelajar yang efektif.",
+        "indicators": [
+          {
+            "code": "3.2.1",
+            "title": "Mampu memotivasi warga madrasah dalam menumbuhkan budaya kerja keras."
+          },
+          {
+            "code": "3.2.2",
+            "title": "Pantang menyerah dan selalu mencari solusi terbaik dalam menghadapi kendala madrasah."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Supervisi Kepada Guru dan Tenaga Kependidikan",
+    "subTasks": [
+      {
+        "code": "4.1",
+        "title": "Menyusun program supervisi akademik dalam rangka peningkatan profesionalisme guru.",
+        "indicators": [
+          {
+            "code": "4.1.1",
+            "title": "Mampu menyusun program tahunan supervisi akademik dan manajerial."
+          },
+          {
+            "code": "4.1.2",
+            "title": "Mampu menyusun jadwal pelaksanaan supervisi akademik dan manajerial."
+          }
+        ]
+      },
+      {
+        "code": "4.2",
+        "title": "Melaksanakan supervisi akademik terhadap guru dengan menggunakan pendekatan dan teknik supervisi yang tepat.",
+        "indicators": [
+          {
+            "code": "4.2.1",
+            "title": "Mampu melaksanakan supervisi akademik terhadap guru sesuai pendekatan dan teknik yang tepat."
+          },
+          {
+            "code": "4.2.2",
+            "title": "Mampu memantau pelaksanaan tugas tenaga kependidikan."
+          }
+        ]
+      }
+    ]
+  }
+]
