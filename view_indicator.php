@@ -208,7 +208,7 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                         <h4 class="font-bold text-slate-800">Bukti Otentik Kualitas Kinerja</h4>
                     </div>
                     <?php 
-                        $formatted_evidence = preg_replace('/^\((\d+)\)/m', '☑️ $1.', $requested_evidence);
+                        $formatted_evidence = preg_replace('/^\((\d+)\)/m', '🔵 $1.', $requested_evidence);
                     ?>
                     <div class="text-slate-600 leading-normal whitespace-pre-line bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm"><?php echo htmlspecialchars($formatted_evidence); ?></div>
                 </div>
