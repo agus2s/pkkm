@@ -10,7 +10,7 @@ $action = $_GET['action'] ?? 'get';
 
 if ($action === 'get') {
     // Fetch all tugas_utama
-    $tugas_res = $conn->query("SELECT * FROM tugas_utama ORDER BY kode ASC");
+    $tugas_res = $conn->query("SELECT * FROM tugas_utama ORDER BY CAST(kode AS UNSIGNED) ASC, kode ASC");
     $data = [];
     while ($tugas = $tugas_res->fetch_assoc()) {
         $tugas_item = [
@@ -20,7 +20,7 @@ if ($action === 'get') {
         ];
 
         // Fetch unsur_tugas_utama for this tugas
-        $unsur_res = $conn->query("SELECT * FROM unsur_tugas_utama WHERE tugas_utama = '{$tugas['kode']}' ORDER BY kode ASC");
+        $unsur_res = $conn->query("SELECT * FROM unsur_tugas_utama WHERE tugas_utama = '{$tugas['kode']}' ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED)");
         while ($unsur = $unsur_res->fetch_assoc()) {
             $subTask = [
                 'code' => $unsur['kode'],
@@ -29,7 +29,7 @@ if ($action === 'get') {
             ];
 
             // Fetch indikator_kerja for this unsur
-            $ind_res = $conn->query("SELECT * FROM indikator_kerja WHERE unsur_tugas_utama = '{$unsur['kode']}' ORDER BY kode ASC");
+            $ind_res = $conn->query("SELECT * FROM indikator_kerja WHERE unsur_tugas_utama = '{$unsur['kode']}' ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 3), '.', -1) AS UNSIGNED)");
             while ($ind = $ind_res->fetch_assoc()) {
                 $indicator = [
                     'code' => $ind['kode'],

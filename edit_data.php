@@ -78,21 +78,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$tugas_utama = $conn->query("SELECT * FROM tugas_utama ORDER BY kode ASC");
+$tugas_utama = $conn->query("SELECT * FROM tugas_utama ORDER BY CAST(kode AS UNSIGNED) ASC, kode ASC");
 $tugas_list = [];
 while($row = $tugas_utama->fetch_assoc()) { $tugas_list[] = $row; }
 
 // Filter Unsur berdasarkan Tugas Utama
 $f_tugas = $_GET['f_tugas'] ?? '';
 $where_unsur = $f_tugas ? "WHERE tugas_utama = '" . $conn->real_escape_string($f_tugas) . "'" : "";
-$unsur_tugas_utama = $conn->query("SELECT * FROM unsur_tugas_utama $where_unsur ORDER BY kode ASC");
+$unsur_tugas_utama = $conn->query("SELECT * FROM unsur_tugas_utama $where_unsur ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED)");
 $unsur_list = [];
 while($row = $unsur_tugas_utama->fetch_assoc()) { $unsur_list[] = $row; }
 
 // Filter Indikator berdasarkan Unsur Tugas Utama
 $f_unsur = $_GET['f_unsur'] ?? '';
 $where_indikator = $f_unsur ? "WHERE unsur_tugas_utama = '" . $conn->real_escape_string($f_unsur) . "'" : "";
-$indikator_kerja = $conn->query("SELECT * FROM indikator_kerja $where_indikator ORDER BY kode ASC");
+$indikator_kerja = $conn->query("SELECT * FROM indikator_kerja $where_indikator ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 3), '.', -1) AS UNSIGNED)");
 $indikator_list = [];
 while($row = $indikator_kerja->fetch_assoc()) { $indikator_list[] = $row; }
 
@@ -300,7 +300,7 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                         >
                             <option value="">Semua Tugas</option>
                             <?php foreach($tugas_list as $t): ?>
-                            <option value="<?= $t['kode'] ?>" <?= $f_tugas == $t['kode'] ? 'selected' : '' ?>>
+                            <option value="<?= $t['kode'] ?>" <?= (string)$f_tugas === (string)$t['kode'] ? 'selected' : '' ?>>
                                 Tugas <?= $t['kode'] ?>: <?= htmlspecialchars(substr($t['judul'], 0, 40)) ?>...
                             </option>
                             <?php endforeach; ?>
@@ -400,10 +400,10 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                                 >
                                     <option value="">Semua Unsur</option>
                                     <?php 
-                                    $all_unsur_res = $conn->query("SELECT * FROM unsur_tugas_utama ORDER BY kode ASC");
+                                    $all_unsur_res = $conn->query("SELECT * FROM unsur_tugas_utama ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED)");
                                     while($u = $all_unsur_res->fetch_assoc()): 
                                     ?>
-                                    <option value="<?= $u['kode'] ?>" <?= $f_unsur == $u['kode'] ? 'selected' : '' ?>>
+                                    <option value="<?= $u['kode'] ?>" <?= (string)$f_unsur === (string)$u['kode'] ? 'selected' : '' ?>>
                                         <?= $u['kode'] ?> - <?= htmlspecialchars(substr($u['judul'], 0, 40)) ?>...
                                     </option>
                                     <?php endwhile; ?>
