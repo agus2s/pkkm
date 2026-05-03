@@ -3,114 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penilaian Kinerja Kepala Madrasah (PKKM)</title>
+    <title>Dashboard PKKM - Penilaian Kinerja Kepala Madrasah</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS (via CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons (via CDN) -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Sembunyikan elemen input radio asli untuk kustomisasi styling skor */
-        .score-radio-input:checked + div {
-            background-color: #4f46e5; /* indigo-600 */
-            border-color: #4f46e5;
-            color: white;
+        .glass-header {
+            background: rgba(79, 70, 229, 0.95);
+            backdrop-filter: blur(10px);
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800 pb-20">
+<body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <div id="app-root"></div>
+    <div id="app-root">
+        <!-- Loading State -->
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="flex flex-col items-center gap-4">
+                <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                <p class="text-slate-400 font-medium animate-pulse">Memuat instrumen...</p>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // --- DATA MASTER PKKM ---
+        // --- DATA & STATE ---
         let pkkmData = [];
-
-        // --- STATE MANAGEMENT ---
         let state = {
-            activeTab: 1,
-            scores: {},       // { "1.1.1": 4 }
-            evidences: {},    // { "1.1.1": [{id: 1, title: "Doc", url: "http.."}] }
-            expandedSubTasks: {} // { "1.1": true }
+            activeTab: 1, // tugas_utama id
+            scores: {}
         };
 
         // --- ACTIONS ---
         function setActiveTab(tabId) {
             state.activeTab = tabId;
             renderApp();
-            window.scrollTo(0, 0);
-        }
-
-        function toggleSubTask(code) {
-            state.expandedSubTasks[code] = !state.expandedSubTasks[code];
-            renderApp();
-        }
-
-        function setScore(indicatorCode, score) {
-            state.scores[indicatorCode] = parseInt(score);
-            renderApp();
-
-            // Save to DB
-            const formData = new FormData();
-            formData.append('code', indicatorCode);
-            formData.append('score', score);
-            fetch('api.php?action=save_score', { method: 'POST', body: formData }).catch(e => console.error(e));
-        }
-
-        function addEvidenceLink(indicatorCode) {
-            const titleInput = document.getElementById(`title-${indicatorCode}`);
-            const urlInput = document.getElementById(`url-${indicatorCode}`);
-            
-            const title = titleInput.value.trim();
-            let url = urlInput.value.trim();
-
-            if (!title || !url) return;
-
-            // Validasi format URL sederhana
-            if (!/^https?:\/\//i.test(url)) {
-                url = 'https://' + url;
-            }
-
-            if (!state.evidences[indicatorCode]) {
-                state.evidences[indicatorCode] = [];
-            }
-
-            state.evidences[indicatorCode].push({
-                id: Date.now(),
-                title: title,
-                url: url
-            });
-
-            // Re-render
-            renderApp();
-
-            // Save to DB
-            const formData = new FormData();
-            formData.append('code', indicatorCode);
-            formData.append('evidences', JSON.stringify(state.evidences[indicatorCode]));
-            fetch('api.php?action=save_evidences', { method: 'POST', body: formData }).catch(e => console.error(e));
-        }
-
-        function removeEvidenceLink(indicatorCode, linkId) {
-            state.evidences[indicatorCode] = state.evidences[indicatorCode].filter(link => link.id !== linkId);
-            renderApp();
-
-            // Save to DB
-            const formData = new FormData();
-            formData.append('code', indicatorCode);
-            formData.append('evidences', JSON.stringify(state.evidences[indicatorCode]));
-            fetch('api.php?action=save_evidences', { method: 'POST', body: formData }).catch(e => console.error(e));
-        }
-
-        function handlePrint() {
-            window.print();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function calculateStats() {
@@ -135,53 +72,53 @@
             
             let grade = "Kurang";
             let gradeColor = "text-red-600";
-            if (percentage >= 91) { grade = "Amat Baik"; gradeColor = "text-green-600"; }
-            else if (percentage >= 76) { grade = "Baik"; gradeColor = "text-blue-600"; }
-            else if (percentage >= 61) { grade = "Cukup"; gradeColor = "text-yellow-600"; }
+            let bgGrade = "bg-red-50";
+            if (percentage >= 91) { grade = "Amat Baik"; gradeColor = "text-emerald-600"; bgGrade = "bg-emerald-50"; }
+            else if (percentage >= 76) { grade = "Baik"; gradeColor = "text-blue-600"; bgGrade = "bg-blue-50"; }
+            else if (percentage >= 61) { grade = "Cukup"; gradeColor = "text-amber-600"; bgGrade = "bg-amber-50"; }
 
-            return { totalIndicators, answeredIndicators, totalScore, maxScore, percentage, grade, gradeColor };
+            return { totalIndicators, answeredIndicators, totalScore, maxScore, percentage, grade, gradeColor, bgGrade };
         }
 
-        // --- RENDERING ---
+        // --- COMPONENTS ---
         function renderHeader() {
-            let tabsHtml = pkkmData.map(task => `
+            const tabsHtml = pkkmData.map(task => `
                 <button
                     onclick="setActiveTab(${task.id})"
-                    class="whitespace-nowrap px-4 py-2 rounded-t-lg font-medium text-xs transition-colors duration-200 
+                    class="whitespace-nowrap px-6 py-4 font-bold text-xs tracking-widest uppercase transition-all relative
                     ${state.activeTab === task.id 
-                        ? 'bg-slate-50 text-indigo-700 border-t-2 border-indigo-500' 
-                        : 'text-indigo-100 hover:bg-indigo-600 border-t-2 border-transparent'}"
+                        ? 'text-white' 
+                        : 'text-indigo-200 hover:text-white'}"
                 >
-                    TUGAS ${task.id}
+                    Tugas ${task.id}
+                    ${state.activeTab === task.id ? '<div class="absolute bottom-0 left-0 w-full h-1 bg-white rounded-t-full"></div>' : ''}
                 </button>
             `).join('');
 
             return `
-                <header class="bg-indigo-700 text-white shadow-md print:hidden sticky top-0 z-20">
-                    <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center gap-4">
-                        <div class="flex items-center gap-4">
-                            <h1 class="text-lg font-bold">Aplikasi PKKM</h1>
-                            <p class="text-indigo-200 text-xs hidden sm:block border-l border-indigo-500/50 pl-4">Penilaian Kinerja Kepala Madrasah</p>
+                <header class="glass-header text-white sticky top-0 z-40 shadow-lg print:hidden">
+                    <div class="max-w-6xl mx-auto px-6">
+                        <div class="flex justify-between items-center h-16 border-b border-white/10">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-white p-1.5 rounded-lg shadow-inner">
+                                    <i data-lucide="shield-check" class="w-6 h-6 text-indigo-600"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-lg font-black tracking-tighter leading-none">Aplikasi PKKM</h1>
+                                    <p class="text-[10px] font-bold text-indigo-200 uppercase tracking-widest opacity-80">Penilaian Kinerja Kepala Madrasah</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    onclick="setActiveTab('summary')"
+                                    class="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all text-xs font-bold border border-white/10"
+                                >
+                                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                                    Hasil Akhir
+                                </button>
+                            </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button 
-                                onclick="setActiveTab('summary')"
-                                class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-md transition-colors text-xs font-medium border border-indigo-500"
-                            >
-                                <i data-lucide="award" class="w-3.5 h-3.5"></i>
-                                Hasil
-                            </button>
-                            <button 
-                                onclick="handlePrint()"
-                                class="flex items-center gap-1.5 bg-white text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded-md transition-colors text-xs font-medium shadow-sm"
-                            >
-                                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                                Cetak
-                            </button>
-                        </div>
-                    </div>
-                    <div class="max-w-7xl mx-auto px-4 overflow-x-auto">
-                        <div class="flex space-x-1">
+                        <div class="flex overflow-x-auto custom-scrollbar">
                             ${tabsHtml}
                         </div>
                     </div>
@@ -189,225 +126,117 @@
             `;
         }
 
-        function renderTaskContent(task) {
-            let subTasksHtml = task.subTasks.map(subTask => {
-                const isExpanded = state.expandedSubTasks[subTask.code];
-                
-                let indicatorsHtml = '';
-                if (isExpanded) {
-                    indicatorsHtml = `<div class="divide-y divide-slate-100">`;
-                    
-                    subTask.indicators.forEach(indicator => {
-                        const currentScore = state.scores[indicator.code];
-                        const evidences = state.evidences[indicator.code] || [];
-                        
-                        let evidenceListHtml = evidences.map(link => `
-                            <li class="flex items-center gap-2 bg-indigo-50/50 border border-indigo-100 p-2 rounded-lg text-sm">
-                                <i data-lucide="link" class="w-4 h-4 text-indigo-500 flex-shrink-0"></i>
-                                <a href="${link.url}" target="_blank" rel="noreferrer" class="text-indigo-600 hover:underline flex-1 truncate">
-                                    ${link.title}
-                                </a>
-                                <button 
-                                    onclick="removeEvidenceLink('${indicator.code}', ${link.id})"
-                                    class="text-red-400 hover:text-red-600 p-1 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
-                                    title="Hapus Tautan"
-                                >
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </li>
-                        `).join('');
-
-                        let scoreRadioHtml = [1, 2, 3, 4].map(val => `
-                            <label class="cursor-pointer group flex flex-col items-center">
-                                <input 
-                                    type="radio" 
-                                    name="score-${indicator.code}"
-                                    value="${val}"
-                                    class="sr-only score-radio-input"
-                                    ${currentScore === val ? 'checked' : ''}
-                                    onchange="setScore('${indicator.code}', ${val})"
-                                />
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-slate-300 bg-white text-slate-500 font-semibold group-hover:border-indigo-400 transition-all shadow-sm">
-                                    ${val}
-                                </div>
-                            </label>
-                        `).join('');
-
-                        indicatorsHtml += `
-                            <div class="p-5 flex flex-col lg:flex-row gap-6 hover:bg-slate-50/50 transition-colors print:p-2 print:border-b">
-                                <!-- Info Indikator -->
-                                <div class="flex-1">
-                                    <div class="flex gap-3 mb-2">
-                                        <span class="font-medium text-slate-500 whitespace-nowrap">${indicator.code}</span>
-                                        <p class="text-slate-700">${indicator.title}</p>
-                                    </div>
-                                    
-                                    <!-- Area Bukti Fisik (Sembunyi saat diprint) -->
-                                    <div class="ml-10 mt-4 print:hidden">
-                                        <div class="text-sm font-medium text-slate-500 mb-2 flex items-center gap-2">
-                                            <i data-lucide="file-text" class="w-4 h-4"></i>
-                                            Bukti Fisik (Link Google Drive)
-                                        </div>
-                                        
-                                        ${evidences.length > 0 ? `<ul class="space-y-2 mb-3">${evidenceListHtml}</ul>` : ''}
-
-                                        <!-- Form Tambah Bukti -->
-                                        <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap">
-                                            <input 
-                                                type="text" 
-                                                id="title-${indicator.code}"
-                                                placeholder="Nama Dokumen (SK, Foto, dll)" 
-                                                class="flex-1 min-w-[150px] text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                            />
-                                            <input 
-                                                type="text" 
-                                                id="url-${indicator.code}"
-                                                placeholder="Link Google Drive" 
-                                                class="flex-1 min-w-[150px] text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                            />
-                                            <button 
-                                                onclick="addEvidenceLink('${indicator.code}')"
-                                                class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 p-2 rounded-lg font-medium text-sm flex items-center gap-1 transition-colors whitespace-nowrap"
-                                            >
-                                                <i data-lucide="plus" class="w-4 h-4"></i> Tambah
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Tampilan Bukti Fisik Saat Diprint -->
-                                    <div class="hidden print:block ml-10 mt-2 text-sm">
-                                        <strong>Bukti Fisik:</strong> ${evidences.length > 0 ? evidences.map(e => e.title).join(', ') : '-'}
-                                    </div>
-                                </div>
-
-                                <!-- Area Penilaian -->
-                                <div class="lg:w-64 bg-slate-50 p-4 rounded-xl border border-slate-200 print:border-none print:bg-transparent print:p-0 print:w-auto">
-                                    <div class="text-center font-semibold text-slate-600 mb-3 text-sm print:hidden">Nilai (1-4)</div>
-                                    <div class="flex justify-between items-center print:hidden">
-                                        ${scoreRadioHtml}
-                                    </div>
-                                    <!-- Nilai Saat Diprint -->
-                                    <div class="hidden print:flex h-full items-center">
-                                        <span class="font-bold text-lg mr-2">Nilai:</span>
-                                        <span class="text-xl inline-block w-10 text-center border-b-2 border-black">
-                                            ${currentScore || ''}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    indicatorsHtml += `</div>`;
-                }
+        function renderMenuContent(task) {
+            const cardsHtml = task.subTasks.map(subTask => {
+                const firstCode = subTask.indicators.length > 0 ? subTask.indicators[0].code : '';
+                const total = subTask.indicators.length;
+                const done = subTask.indicators.filter(i => state.scores[i.code]).length;
+                const progress = total > 0 ? (done / total) * 100 : 0;
 
                 return `
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-300 overflow-hidden print:border-none print:shadow-none print:mb-6">
-                        <!-- Header Sub-Tugas -->
-                        <div 
-                            class="bg-slate-100/50 p-4 border-b border-slate-300 flex justify-between items-center cursor-pointer hover:bg-slate-100 transition-colors print:bg-transparent print:border-b-2 print:border-slate-800"
-                            onclick="toggleSubTask('${subTask.code}')"
-                        >
-                            <h3 class="font-semibold text-slate-800 text-lg flex items-start gap-3">
-                                <span class="text-indigo-600 mt-1 whitespace-nowrap">${subTask.code}</span>
-                                ${subTask.title}
-                            </h3>
-                            <button class="text-slate-400 print:hidden">
-                                <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-6 h-6"></i>
-                            </button>
+                    <a href="view_indicator.php?code=${firstCode}" class="group bg-white border border-slate-200 p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-indigo-400 hover:-translate-y-1 transition-all duration-300">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg uppercase tracking-widest">Unsur ${subTask.code}</span>
+                            <div class="flex items-center gap-1.5 text-xs font-bold ${done === total ? 'text-emerald-500' : 'text-slate-400'}">
+                                <i data-lucide="${done === total ? 'check-circle' : 'circle'}" class="w-4 h-4"></i>
+                                ${done}/${total}
+                            </div>
                         </div>
-                        ${indicatorsHtml}
-                    </div>
+                        <h3 class="text-slate-800 font-bold leading-snug mb-6 group-hover:text-indigo-700 transition-colors">
+                            ${subTask.title}
+                        </h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                <span>Progress</span>
+                                <span>${Math.round(progress)}%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-indigo-500 h-full transition-all duration-700" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    </a>
                 `;
             }).join('');
 
-            const currentIndex = pkkmData.findIndex(t => t.id === state.activeTab);
-            const prevDisabled = currentIndex === 0 ? 'disabled class="opacity-50 cursor-not-allowed"' : '';
-            const nextTab = currentIndex < pkkmData.length - 1 ? pkkmData[currentIndex + 1].id : "'summary'";
-            const nextText = currentIndex === pkkmData.length - 1 ? 'Lihat Hasil' : 'Selanjutnya';
-
             return `
-                <div class="mb-6 border-b pb-4">
-                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
-                        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md text-xl">${task.id}</span>
-                        ${task.title}
-                    </h2>
-                </div>
-                <div class="space-y-6">
-                    ${subTasksHtml}
-                </div>
-                <!-- Form Actions (Navigasi Bawah) -->
-                <div class="flex justify-between items-center pt-6 mt-6 print:hidden">
-                    <button 
-                        onclick="setActiveTab(${currentIndex > 0 ? pkkmData[currentIndex - 1].id : 1})"
-                        ${prevDisabled}
-                        class="px-6 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition-colors"
-                    >
-                        Sebelumnya
-                    </button>
-                    <button 
-                        onclick="setActiveTab(${nextTab})"
-                        class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 shadow-sm transition-colors"
-                    >
-                        ${nextText}
-                    </button>
+                <div class="max-w-6xl mx-auto px-6 py-10">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-2">Tugas Utama ${task.id}</h2>
+                            <p class="text-slate-500 font-medium max-w-2xl leading-relaxed">${task.title}</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center gap-4 shrink-0">
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Unsur</p>
+                                <p class="text-xl font-black text-indigo-600 leading-none">${task.subTasks.length}</p>
+                            </div>
+                            <div class="w-px h-10 bg-slate-100"></div>
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Indikator</p>
+                                <p class="text-xl font-black text-slate-800 leading-none">
+                                    ${task.subTasks.reduce((acc, curr) => acc + curr.indicators.length, 0)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${cardsHtml}
+                    </div>
                 </div>
             `;
         }
 
         function renderSummary() {
             const stats = calculateStats();
-            
             return `
-                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden print:shadow-none print:border-none">
-                    <div class="bg-indigo-600 p-8 text-white text-center print:bg-white print:text-black print:p-0 print:mb-8">
-                        <i data-lucide="award" class="w-12 h-12 mx-auto mb-4 opacity-90 print:hidden"></i>
-                        <h2 class="text-3xl font-bold mb-2 print:text-2xl print:border-b-2 print:border-black print:pb-2">Hasil Penilaian Kinerja</h2>
-                        <p class="text-indigo-100 print:text-gray-700">Rekapitulasi total capaian dari seluruh instrumen</p>
-                    </div>
-                    
-                    <div class="p-8 print:p-0">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 print:grid-cols-2 print:gap-4">
-                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
-                                <div class="text-slate-500 text-sm font-medium mb-1">Progres Pengisian</div>
-                                <div class="text-3xl font-bold text-slate-800">
-                                    ${stats.answeredIndicators} / ${stats.totalIndicators}
-                                </div>
+                <div class="max-w-6xl mx-auto px-6 py-12">
+                    <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
+                        <div class="bg-indigo-600 p-12 text-center text-white relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                                <div class="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                                <div class="absolute bottom-0 left-0 w-96 h-96 bg-indigo-400 rounded-full -ml-32 -mb-32 blur-3xl"></div>
                             </div>
-                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
-                                <div class="text-slate-500 text-sm font-medium mb-1">Skor Diperoleh</div>
-                                <div class="text-3xl font-bold text-indigo-600 print:text-black">${stats.totalScore}</div>
-                            </div>
-                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
-                                <div class="text-slate-500 text-sm font-medium mb-1">Skor Maksimal</div>
-                                <div class="text-3xl font-bold text-slate-800">${stats.maxScore}</div>
-                            </div>
-                            <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100 text-center relative overflow-hidden print:bg-white print:border-gray-300">
-                                <div class="text-indigo-600 text-sm font-medium mb-1 print:text-black">Nilai Akhir (PKKM)</div>
-                                <div class="text-3xl font-bold text-indigo-700 print:text-black">${stats.percentage}%</div>
-                                <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-200 rounded-bl-full -z-10 opacity-50 print:hidden"></div>
-                            </div>
+                            <i data-lucide="award" class="w-16 h-16 mx-auto mb-6 text-indigo-200"></i>
+                            <h2 class="text-4xl font-black mb-3 tracking-tight">Hasil Penilaian Kinerja</h2>
+                            <p class="text-indigo-100 font-medium max-w-lg mx-auto leading-relaxed">Rekapitulasi total capaian dari seluruh instrumen penilaian kinerja kepala madrasah</p>
                         </div>
 
-                        <div class="text-center mb-8">
-                            <div class="inline-block px-8 py-4 bg-slate-50 rounded-2xl border-2 border-slate-200 border-dashed">
-                                <div class="text-slate-500 mb-2">Predikat Kinerja:</div>
-                                <div class="text-4xl font-extrabold tracking-tight ${stats.gradeColor} print:text-black">
+                        <div class="p-12">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Progres</p>
+                                    <p class="text-2xl font-black text-slate-800">${stats.answeredIndicators} / ${stats.totalIndicators}</p>
+                                </div>
+                                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Skor Total</p>
+                                    <p class="text-2xl font-black text-indigo-600">${stats.totalScore}</p>
+                                </div>
+                                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Maksimal</p>
+                                    <p class="text-2xl font-black text-slate-800">${stats.maxScore}</p>
+                                </div>
+                                <div class="${stats.bgGrade} p-6 rounded-3xl border border-indigo-100 text-center">
+                                    <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-2">Persentase</p>
+                                    <p class="text-2xl font-black text-indigo-700">${stats.percentage}%</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 rounded-[2rem] p-10 text-center border-2 border-dashed border-slate-200">
+                                <p class="text-slate-500 font-bold uppercase tracking-[0.2em] text-xs mb-4">Predikat Kinerja</p>
+                                <div class="text-6xl font-black tracking-tighter ${stats.gradeColor} mb-2">
                                     ${stats.grade}
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Area Tanda Tangan Khusus Print -->
-                        <div class="hidden print:flex justify-between mt-20 pt-10 px-10">
-                            <div class="text-center">
-                                <p class="mb-20">Mengetahui,<br/>Kepala Kantor Kemenag / Pengawas</p>
-                                <p class="font-bold border-b border-black inline-block px-4">.......................................</p>
-                                <p>NIP.</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="mb-20">....................., .................... ${new Date().getFullYear()}<br/>Kepala Madrasah Yang Dinilai</p>
-                                <p class="font-bold border-b border-black inline-block px-4">.......................................</p>
-                                <p>NIP.</p>
+                            
+                            <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4 print:hidden">
+                                <button onclick="window.print()" class="flex items-center justify-center gap-2 px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
+                                    <i data-lucide="printer" class="w-5 h-5"></i>
+                                    Cetak Hasil
+                                </button>
+                                <button onclick="setActiveTab(1)" class="flex items-center justify-center gap-2 px-8 py-3 border-2 border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition-all">
+                                    Kembali ke Instrumen
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -418,63 +247,56 @@
         function renderApp() {
             const root = document.getElementById('app-root');
             
-            let mainContentHtml = '';
+            let content = '';
             if (state.activeTab === 'summary') {
-                mainContentHtml = renderSummary();
+                content = renderSummary();
             } else {
-                const activeTaskData = pkkmData.find(t => t.id === state.activeTab);
-                mainContentHtml = renderTaskContent(activeTaskData);
+                const activeTask = pkkmData.find(t => t.id === state.activeTab);
+                content = renderMenuContent(activeTask);
             }
 
             root.innerHTML = `
                 ${renderHeader()}
-                <main class="max-w-7xl mx-auto px-4 py-8">
-                    <!-- Header Print (Hanya tampil saat dicetak) -->
-                    <div class="hidden print:block text-center mb-8 pb-4 border-b-2 border-slate-800">
-                        <h1 class="text-2xl font-bold">INSTRUMEN PENILAIAN KINERJA KEPALA MADRASAH</h1>
-                        <p class="text-lg">Tahun Penilaian: ${new Date().getFullYear()}</p>
-                    </div>
-                    
-                    ${mainContentHtml}
+                <main>
+                    ${content}
                 </main>
             `;
-
-            // Merender ulang ikon-ikon Lucide setelah manipulasi DOM
+            
             lucide.createIcons();
         }
 
-        // Inisialisasi awal aplikasi
+        // --- INIT ---
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const response = await fetch('api.php?action=get');
-                if (!response.ok) throw new Error('Gagal mengambil data dari server');
-                
+                if (!response.ok) throw new Error('Network response was not ok');
                 pkkmData = await response.json();
                 
-                // Inisialisasi semua subtask agar terbuka secara default dan memuat data dari DB
+                // Extract scores from data
                 pkkmData.forEach(task => {
                     task.subTasks.forEach(sub => {
-                        state.expandedSubTasks[sub.code] = true;
                         sub.indicators.forEach(ind => {
                             if (ind.score) state.scores[ind.code] = ind.score;
-                            if (ind.evidences && ind.evidences.length > 0) state.evidences[ind.code] = ind.evidences;
                         });
                     });
                 });
-                
+
                 renderApp();
             } catch (error) {
-                console.error("Gagal memuat data PKKM:", error);
+                console.error('Fetch error:', error);
                 document.getElementById('app-root').innerHTML = `
-                    <div class="p-8 text-center mt-10">
-                        <div class="inline-block bg-red-100 text-red-600 px-6 py-4 rounded-xl border border-red-200">
-                            <strong>Gagal memuat data indikator.</strong><br/> 
-                            Pastikan Anda mengakses aplikasi ini melalui Web Server (localhost).
+                    <div class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+                        <div class="bg-red-50 border border-red-100 p-8 rounded-[2rem] max-w-md shadow-xl">
+                            <i data-lucide="alert-triangle" class="w-12 h-12 text-red-500 mx-auto mb-4"></i>
+                            <h2 class="text-xl font-black text-slate-900 mb-2">Gagal Memuat Data</h2>
+                            <p class="text-slate-500 text-sm mb-6 leading-relaxed">Terjadi kesalahan saat mengambil data instrumen dari server. Pastikan database sudah terhubung.</p>
+                            <button onclick="location.reload()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-red-100">Coba Lagi</button>
                         </div>
-                    </div>`;
+                    </div>
+                `;
+                lucide.createIcons();
             }
         });
-
     </script>
 </body>
 </html>

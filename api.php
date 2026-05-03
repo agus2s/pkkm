@@ -36,7 +36,8 @@ if ($action === 'get') {
                     'title' => $ind['judul'],
                     'data' => $ind['data_kinerja'],
                     'score' => (int)$ind['hasil_kinerja'],
-                    'evidences' => json_decode($ind['bukti_otentik'] ?: '[]', true)
+                    'requested_evidence' => $ind['bukti_otentik'],
+                    'evidences' => json_decode($ind['tautan_bukti'] ?: '[]', true)
                 ];
                 $subTask['indicators'][] = $indicator;
             }
@@ -60,7 +61,7 @@ if ($action === 'get') {
     // Validate json
     if (json_decode($evidences) !== null && $kode) {
         $evidences_esc = $conn->real_escape_string($evidences);
-        $conn->query("UPDATE indikator_kerja SET bukti_otentik = '$evidences_esc' WHERE kode = '$kode'");
+        $conn->query("UPDATE indikator_kerja SET tautan_bukti = '$evidences_esc' WHERE kode = '$kode'");
         echo json_encode(["status" => "success"]);
     } else {
         echo json_encode(["status" => "error", "message" => "Invalid data"]);
