@@ -191,6 +191,13 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
             </div>
             <div class="flex items-center gap-2 sm:gap-4">
                 <button 
+                    onclick="toggleShortcutModal()"
+                    class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400"
+                    title="Shortcut Keyboard"
+                >
+                    <i data-lucide="keyboard" class="w-5 h-5"></i>
+                </button>
+                <button 
                     onclick="toggleTheme()"
                     class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400"
                     title="Ganti Tema"
@@ -336,7 +343,6 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                                 <div class="aspect-square rounded-xl flex items-center justify-center border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-600 font-black text-xl group-hover:border-indigo-300 dark:group-hover:border-indigo-700 group-hover:text-indigo-400 dark:group-hover:text-indigo-500 transition-all shadow-sm">
                                     <?php echo $i; ?>
                                 </div>
-                                <span class="absolute -bottom-1 -right-1 text-[8px] font-bold text-slate-300 dark:text-slate-700 bg-white dark:bg-slate-900 px-1 rounded border border-slate-100 dark:border-slate-800 hidden md:block">[<?php echo $i; ?>]</span>
                             </label>
                             <?php endfor; ?>
                         </div>
@@ -346,7 +352,7 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                                 <i data-lucide="check" class="w-3 h-3"></i> Tersimpan
                             </div>
                             <button onclick="updateScore('<?php echo $indicator['kode']; ?>', 0); document.querySelectorAll('input[name=\'score\']').forEach(r => r.checked = false);" class="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest flex items-center gap-1">
-                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset Nilai <span class="opacity-50 ml-1 hidden md:inline">[0]</span>
+                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset Nilai
                             </button>
                         </div>
                     </div>
@@ -362,7 +368,7 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                             <i data-lucide="chevron-left" class="w-5 h-5"></i>
                         </div>
                         <div class="hidden sm:block">
-                            <span class="block text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Sebelumnya <span class="ml-1 opacity-50 hidden md:inline">[←]</span></span>
+                            <span class="block text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Sebelumnya</span>
                             <span class="block text-sm font-bold text-slate-600 dark:text-slate-200"><?php echo $prevCode; ?></span>
                         </div>
                     </a>
@@ -385,7 +391,7 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                     <?php if ($nextCode): ?>
                     <a href="?code=<?php echo $nextCode; ?>" class="flex items-center gap-3 group text-right">
                         <div class="hidden sm:block">
-                            <span class="block text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Selanjutnya <span class="ml-1 opacity-50 hidden md:inline">[→]</span></span>
+                            <span class="block text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Selanjutnya</span>
                             <span class="block text-sm font-bold text-slate-600 dark:text-slate-200"><?php echo $nextCode; ?></span>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:border-indigo-200 dark:group-hover:border-indigo-800 transition-all shadow-sm">
@@ -408,8 +414,56 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
         </div>
     </main>
 
+    <!-- Shortcut Help Modal -->
+    <div id="shortcut-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="toggleShortcutModal()"></div>
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 animate-in zoom-in duration-200">
+            <div class="p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                        <i data-lucide="keyboard" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white">Shortcut Keyboard</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between group">
+                        <span class="text-sm text-slate-500 dark:text-slate-400">Navigasi Halaman</span>
+                        <div class="flex gap-1">
+                            <kbd class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-sm">←</kbd>
+                            <kbd class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-sm">→</kbd>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between group">
+                        <span class="text-sm text-slate-500 dark:text-slate-400">Pilih Skor (Level 1-4)</span>
+                        <div class="flex gap-1">
+                            <kbd class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-sm">1</kbd>
+                            <span class="text-slate-300">-</span>
+                            <kbd class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-sm">4</kbd>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between group">
+                        <span class="text-sm text-slate-500 dark:text-slate-400">Reset Nilai (Skor 0)</span>
+                        <kbd class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-sm">0</kbd>
+                    </div>
+                    <div class="flex items-center justify-between group pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-sm text-slate-500 dark:text-slate-400">Ganti Tema</span>
+                        <kbd class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-sm">T</kbd>
+                    </div>
+                </div>
+
+                <button onclick="toggleShortcutModal()" class="w-full mt-8 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-3 rounded-2xl font-bold text-sm transition-all">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         lucide.createIcons();
+
+        function toggleShortcutModal() {
+            const modal = document.getElementById('shortcut-modal');
+            modal.classList.toggle('hidden');
+        }
 
         function toggleDrawer() {
             const drawer = document.getElementById('nav-drawer');
@@ -481,6 +535,11 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
 
                 // Kirim ke server
                 updateScore(code, score);
+            }
+
+            // Shortcut Ganti Tema (T)
+            if (e.key.toLowerCase() === 't') {
+                toggleTheme();
             }
         });
 
