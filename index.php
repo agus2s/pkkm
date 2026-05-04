@@ -11,6 +11,31 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script>
+        // Pre-initialization to prevent flash
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -18,19 +43,23 @@
             background: rgba(79, 70, 229, 0.95);
             backdrop-filter: blur(10px);
         }
+        .dark .glass-header {
+            background: rgba(30, 27, 75, 0.9);
+        }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen transition-colors duration-300">
 
     <div id="app-root">
         <!-- Loading State -->
         <div class="flex items-center justify-center min-h-screen">
             <div class="flex flex-col items-center gap-4">
-                <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-                <p class="text-slate-400 font-medium animate-pulse">Memuat instrumen...</p>
+                <div class="w-12 h-12 border-4 border-indigo-200 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin"></div>
+                <p class="text-slate-400 dark:text-slate-500 font-medium animate-pulse">Memuat instrumen...</p>
             </div>
         </div>
     </div>
@@ -48,6 +77,17 @@
             state.activeTab = tabId;
             renderApp();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            renderApp();
         }
 
         function calculateStats() {
@@ -82,6 +122,7 @@
 
         // --- COMPONENTS ---
         function renderHeader() {
+            const isDark = document.documentElement.classList.contains('dark');
             const tabsHtml = pkkmData.map(task => `
                 <button
                     onclick="setActiveTab(${task.id})"
@@ -110,6 +151,13 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <button 
+                                    onclick="toggleTheme()"
+                                    class="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all border border-white/10"
+                                    title="Ganti Tema"
+                                >
+                                    <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-4 h-4"></i>
+                                </button>
+                                <button 
                                     onclick="setActiveTab('summary')"
                                     class="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all text-xs font-bold border border-white/10"
                                 >
@@ -134,23 +182,23 @@
                 const progress = total > 0 ? (done / total) * 100 : 0;
 
                 return `
-                    <a href="view_indicator.php?code=${firstCode}" class="group bg-white border border-slate-200 p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-indigo-400 hover:-translate-y-1 transition-all duration-300">
+                    <a href="view_indicator.php?code=${firstCode}" class="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:-translate-y-1 transition-all duration-300">
                         <div class="flex justify-between items-start mb-4">
-                            <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg uppercase tracking-widest">Unsur ${subTask.code}</span>
-                            <div class="flex items-center gap-1.5 text-xs font-bold ${done === total ? 'text-emerald-500' : 'text-slate-400'}">
+                            <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-lg uppercase tracking-widest">Unsur ${subTask.code}</span>
+                            <div class="flex items-center gap-1.5 text-xs font-bold ${done === total ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}">
                                 <i data-lucide="${done === total ? 'check-circle' : 'circle'}" class="w-4 h-4"></i>
                                 ${done}/${total}
                             </div>
                         </div>
-                        <h3 class="text-slate-800 font-bold leading-snug mb-6 group-hover:text-indigo-700 transition-colors">
+                        <h3 class="text-slate-800 dark:text-slate-100 font-bold leading-snug mb-6 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition-colors">
                             ${subTask.title}
                         </h3>
                         <div class="space-y-2">
-                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                                 <span>Progress</span>
                                 <span>${Math.round(progress)}%</span>
                             </div>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                                 <div class="bg-indigo-500 h-full transition-all duration-700" style="width: ${progress}%"></div>
                             </div>
                         </div>
@@ -162,18 +210,18 @@
                 <div class="max-w-6xl mx-auto px-6 py-10">
                     <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
                         <div>
-                            <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-2">Tugas Utama ${task.id}</h2>
-                            <p class="text-slate-500 font-medium max-w-2xl leading-relaxed">${task.title}</p>
+                            <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Tugas Utama ${task.id}</h2>
+                            <p class="text-slate-500 dark:text-slate-400 font-medium max-w-2xl leading-relaxed">${task.title}</p>
                         </div>
-                        <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center gap-4 shrink-0">
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex items-center gap-4 shrink-0">
                             <div class="text-right">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Unsur</p>
-                                <p class="text-xl font-black text-indigo-600 leading-none">${task.subTasks.length}</p>
+                                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total Unsur</p>
+                                <p class="text-xl font-black text-indigo-600 dark:text-indigo-400 leading-none">${task.subTasks.length}</p>
                             </div>
-                            <div class="w-px h-10 bg-slate-100"></div>
+                            <div class="w-px h-10 bg-slate-100 dark:bg-slate-800"></div>
                             <div class="text-right">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Indikator</p>
-                                <p class="text-xl font-black text-slate-800 leading-none">
+                                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Indikator</p>
+                                <p class="text-xl font-black text-slate-800 dark:text-slate-200 leading-none">
                                     ${task.subTasks.reduce((acc, curr) => acc + curr.indicators.length, 0)}
                                 </p>
                             </div>
@@ -191,7 +239,7 @@
             const stats = calculateStats();
             return `
                 <div class="max-w-6xl mx-auto px-6 py-12">
-                    <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
+                    <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 overflow-hidden">
                         <div class="bg-indigo-600 p-12 text-center text-white relative overflow-hidden">
                             <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
                                 <div class="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
@@ -204,37 +252,37 @@
 
                         <div class="p-12">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Progres</p>
-                                    <p class="text-2xl font-black text-slate-800">${stats.answeredIndicators} / ${stats.totalIndicators}</p>
+                                <div class="bg-slate-50 dark:bg-slate-950 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 text-center">
+                                    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Progres</p>
+                                    <p class="text-2xl font-black text-slate-800 dark:text-slate-100">${stats.answeredIndicators} / ${stats.totalIndicators}</p>
                                 </div>
-                                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Skor Total</p>
-                                    <p class="text-2xl font-black text-indigo-600">${stats.totalScore}</p>
+                                <div class="bg-slate-50 dark:bg-slate-950 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 text-center">
+                                    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Skor Total</p>
+                                    <p class="text-2xl font-black text-indigo-600 dark:text-indigo-400">${stats.totalScore}</p>
                                 </div>
-                                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Maksimal</p>
-                                    <p class="text-2xl font-black text-slate-800">${stats.maxScore}</p>
+                                <div class="bg-slate-50 dark:bg-slate-950 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 text-center">
+                                    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Maksimal</p>
+                                    <p class="text-2xl font-black text-slate-800 dark:text-slate-100">${stats.maxScore}</p>
                                 </div>
-                                <div class="${stats.bgGrade} p-6 rounded-3xl border border-indigo-100 text-center">
-                                    <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-2">Persentase</p>
-                                    <p class="text-2xl font-black text-indigo-700">${stats.percentage}%</p>
+                                <div class="${stats.bgGrade} dark:bg-indigo-900/20 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-900/30 text-center">
+                                    <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Persentase</p>
+                                    <p class="text-2xl font-black text-indigo-700 dark:text-indigo-300">${stats.percentage}%</p>
                                 </div>
                             </div>
 
-                            <div class="bg-slate-50 rounded-[2rem] p-10 text-center border-2 border-dashed border-slate-200">
-                                <p class="text-slate-500 font-bold uppercase tracking-[0.2em] text-xs mb-4">Predikat Kinerja</p>
-                                <div class="text-6xl font-black tracking-tighter ${stats.gradeColor} mb-2">
+                            <div class="bg-slate-50 dark:bg-slate-950 rounded-[2rem] p-10 text-center border-2 border-dashed border-slate-200 dark:border-slate-800">
+                                <p class="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-[0.2em] text-xs mb-4">Predikat Kinerja</p>
+                                <div class="text-6xl font-black tracking-tighter ${stats.gradeColor} dark:text-indigo-400 mb-2">
                                     ${stats.grade}
                                 </div>
                             </div>
                             
                             <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4 print:hidden">
-                                <button onclick="window.print()" class="flex items-center justify-center gap-2 px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
+                                <button onclick="window.print()" class="flex items-center justify-center gap-2 px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-xl shadow-slate-200 dark:shadow-none">
                                     <i data-lucide="printer" class="w-5 h-5"></i>
                                     Cetak Hasil
                                 </button>
-                                <button onclick="setActiveTab(1)" class="flex items-center justify-center gap-2 px-8 py-3 border-2 border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition-all">
+                                <button onclick="setActiveTab(1)" class="flex items-center justify-center gap-2 px-8 py-3 border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-900 transition-all">
                                     Kembali ke Instrumen
                                 </button>
                             </div>

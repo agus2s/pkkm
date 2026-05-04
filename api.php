@@ -1,51 +1,54 @@
 <?php
 header('Content-Type: application/json');
-$conn = new mysqli("localhost", "root", "@Pesantren1", "pkkm");
-
-if ($conn->connect_error) {
-    die(json_encode(["error" => "Connection failed: " . $conn->connect_error]));
-}
+require_once 'db.php';
 
 $action = $_GET['action'] ?? 'get';
 
 if ($action === 'get') {
-    // Fetch all tugas_utama
+    // 1. Fetch all data at once to avoid N+1 query problem
     $tugas_res = $conn->query("SELECT * FROM tugas_utama ORDER BY CAST(kode AS UNSIGNED) ASC, kode ASC");
-    $data = [];
+    $unsur_res = $conn->query("SELECT * FROM unsur_tugas_utama ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED)");
+    $ind_res = $conn->query("SELECT * FROM indikator_kerja ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 3), '.', -1) AS UNSIGNED)");
+
+    $tugas_list = [];
+    $unsur_map = []; // To group unsurs by tugas_utama
+    $ind_map = [];   // To group indicators by unsur_tugas_utama
+
+    // 2. Map indicators
+    while ($ind = $ind_res->fetch_assoc()) {
+        $u_kode = $ind['unsur_tugas_utama'];
+        if (!isset($ind_map[$u_kode])) $ind_map[$u_kode] = [];
+        $ind_map[$u_kode][] = [
+            'code' => $ind['kode'],
+            'title' => $ind['judul'],
+            'data' => $ind['data_kinerja'],
+            'score' => (int)$ind['hasil_kinerja'],
+            'requested_evidence' => $ind['bukti_otentik'],
+            'evidences' => json_decode($ind['tautan_bukti'] ?: '[]', true)
+        ];
+    }
+
+    // 3. Map unsurs
+    while ($unsur = $unsur_res->fetch_assoc()) {
+        $t_kode = $unsur['tugas_utama'];
+        if (!isset($unsur_map[$t_kode])) $unsur_map[$t_kode] = [];
+        $unsur_map[$t_kode][] = [
+            'code' => $unsur['kode'],
+            'title' => $unsur['judul'],
+            'indicators' => $ind_map[$unsur['kode']] ?? []
+        ];
+    }
+
+    // 4. Build final hierarchy
     while ($tugas = $tugas_res->fetch_assoc()) {
-        $tugas_item = [
+        $tugas_list[] = [
             'id' => is_numeric($tugas['kode']) ? (int)$tugas['kode'] : $tugas['kode'],
             'title' => $tugas['judul'],
-            'subTasks' => []
+            'subTasks' => $unsur_map[$tugas['kode']] ?? []
         ];
-
-        // Fetch unsur_tugas_utama for this tugas
-        $unsur_res = $conn->query("SELECT * FROM unsur_tugas_utama WHERE tugas_utama = '{$tugas['kode']}' ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED)");
-        while ($unsur = $unsur_res->fetch_assoc()) {
-            $subTask = [
-                'code' => $unsur['kode'],
-                'title' => $unsur['judul'],
-                'indicators' => []
-            ];
-
-            // Fetch indikator_kerja for this unsur
-            $ind_res = $conn->query("SELECT * FROM indikator_kerja WHERE unsur_tugas_utama = '{$unsur['kode']}' ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 3), '.', -1) AS UNSIGNED)");
-            while ($ind = $ind_res->fetch_assoc()) {
-                $indicator = [
-                    'code' => $ind['kode'],
-                    'title' => $ind['judul'],
-                    'data' => $ind['data_kinerja'],
-                    'score' => (int)$ind['hasil_kinerja'],
-                    'requested_evidence' => $ind['bukti_otentik'],
-                    'evidences' => json_decode($ind['tautan_bukti'] ?: '[]', true)
-                ];
-                $subTask['indicators'][] = $indicator;
-            }
-            $tugas_item['subTasks'][] = $subTask;
-        }
-        $data[] = $tugas_item;
     }
-    echo json_encode($data);
+
+    echo json_encode($tugas_list);
 } elseif ($action === 'save_score') {
     $kode = $conn->real_escape_string($_POST['code'] ?? '');
     $score = (int)($_POST['score'] ?? 0);

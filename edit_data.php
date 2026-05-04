@@ -1,9 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "@Pesantren1", "pkkm");
-
-if ($conn->connect_error) {
-    die("Koneksi database gagal: " . $conn->connect_error);
-}
+require_once 'db.php';
 
 $message = '';
 $messageType = '';
@@ -109,13 +105,38 @@ $active_tab = $_GET['tab'] ?? 'tugas';
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Pre-initialization to prevent flash
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
     </style>
+
     <script>
         function openModal(id) {
             document.getElementById(id).classList.remove('hidden');
@@ -199,15 +220,24 @@ $active_tab = $_GET['tab'] ?? 'tugas';
         }
     </script>
 </head>
-<body class="bg-slate-100 text-slate-800 p-4 md:p-8">
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 p-4 md:p-8 transition-colors duration-300">
     <div class="max-w-6xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900">Editor Instrumen PKKM</h1>
-                <p class="text-slate-600 text-sm">Kelola Tugas Utama, Unsur Tugas, dan Indikator Kinerja</p>
+            <div class="flex items-center gap-4">
+                <button 
+                    onclick="toggleTheme()"
+                    class="p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
+                    title="Ganti Tema"
+                >
+                    <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Editor Instrumen PKKM</h1>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm">Kelola Tugas Utama, Unsur Tugas, dan Indikator Kinerja</p>
+                </div>
             </div>
-            <a href="index.php" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm">
-                &larr; Kembali ke Aplikasi
+            <a href="index.php" class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Aplikasi
             </a>
         </div>
 
@@ -220,56 +250,56 @@ $active_tab = $_GET['tab'] ?? 'tugas';
         <?php endif; ?>
 
         <!-- Tabs -->
-        <div class="flex border-b border-slate-300 mb-6">
-            <a href="?tab=tugas" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'tugas' ? 'border-b-2 border-indigo-600 text-indigo-700 bg-white rounded-t-lg' : 'text-slate-600 hover:text-slate-800' ?>">Tugas Utama</a>
-            <a href="?tab=unsur" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'unsur' ? 'border-b-2 border-indigo-600 text-indigo-700 bg-white rounded-t-lg' : 'text-slate-600 hover:text-slate-800' ?>">Unsur Tugas Utama</a>
-            <a href="?tab=indikator" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'indikator' ? 'border-b-2 border-indigo-600 text-indigo-700 bg-white rounded-t-lg' : 'text-slate-600 hover:text-slate-800' ?>">Indikator Kerja</a>
+        <div class="flex border-b border-slate-300 dark:border-slate-800 mb-6">
+            <a href="?tab=tugas" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'tugas' ? 'border-b-2 border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded-t-lg' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white' ?>">Tugas Utama</a>
+            <a href="?tab=unsur" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'unsur' ? 'border-b-2 border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded-t-lg' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white' ?>">Unsur Tugas Utama</a>
+            <a href="?tab=indikator" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'indikator' ? 'border-b-2 border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded-t-lg' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white' ?>">Indikator Kerja</a>
         </div>
 
         <?php if ($active_tab === 'tugas'): ?>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
-                <h2 class="text-lg font-bold mb-4">Form Tugas Utama</h2>
+            <div class="md:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-fit">
+                <h2 class="text-lg font-bold mb-4 dark:text-white">Form Tugas Utama</h2>
                 <form method="POST">
                     <input type="hidden" name="action" id="form_action" value="add_tugas">
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Kode</label>
-                        <input type="text" name="kode" id="input_kode" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Kode</label>
+                        <input type="text" name="kode" id="input_kode" required class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Judul Tugas</label>
-                        <textarea name="judul" id="input_judul" required rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Judul Tugas</label>
+                        <textarea name="judul" id="input_judul" required rows="3" class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">Tambah Data</button>
-                        <button type="button" id="form_cancel_btn" onclick="cancelEdit('add_tugas')" class="hidden bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300">Batal</button>
+                        <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600">Tambah Data</button>
+                        <button type="button" id="form_cancel_btn" onclick="cancelEdit('add_tugas')" class="hidden bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-700">Batal</button>
                     </div>
                 </form>
             </div>
-            <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-300 overflow-auto max-h-[600px] custom-scrollbar">
+            <div class="md:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 overflow-auto max-h-[600px] custom-scrollbar">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
+                    <thead class="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500">
                         <tr>
                             <th class="px-4 py-3 font-medium">Kode</th>
                             <th class="px-4 py-3 font-medium">Judul</th>
                             <th class="px-4 py-3 font-medium w-24">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         <?php foreach($tugas_list as $row): ?>
-                        <tr class="hover:bg-slate-50">
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors">
                             <td class="px-4 py-3 align-top">
-                                <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-100 whitespace-nowrap">
+                                <span class="font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md border border-indigo-100 dark:border-indigo-900/50 whitespace-nowrap">
                                     <?= htmlspecialchars($row['kode']) ?>
                                 </span>
                             </td>
                             <td class="px-4 py-3 align-top"><?= htmlspecialchars($row['judul']) ?></td>
                             <td class="px-4 py-3 align-top flex gap-2">
-                                <button onclick='fillEdit("edit_tugas", <?= json_encode($row) ?>)' class="text-blue-600 hover:text-blue-800"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button onclick='fillEdit("edit_tugas", <?= json_encode($row) ?>)' class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i data-lucide="edit" class="w-4 h-4"></i></button>
                                 <form method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
                                     <input type="hidden" name="action" value="delete_tugas">
                                     <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
-                                    <button type="submit" class="text-red-600 hover:text-red-800"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><i data-lucide="trash" class="w-4 h-4"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -281,22 +311,22 @@ $active_tab = $_GET['tab'] ?? 'tugas';
 
         <?php elseif ($active_tab === 'unsur'): ?>
         <!-- Filter Bar Unsur -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-300 flex flex-wrap items-center gap-6 mb-6">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 flex flex-wrap items-center gap-6 mb-6">
             <div>
-                <h2 class="text-lg font-bold text-slate-900 leading-tight">Unsur Tugas Utama</h2>
-                <p class="text-slate-500 text-xs font-medium">Total <?= count($unsur_list) ?> Data</p>
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Unsur Tugas Utama</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Total <?= count($unsur_list) ?> Data</p>
             </div>
             
-            <div class="flex items-center gap-3 md:border-l md:border-slate-200 md:pl-6">
-                <div class="bg-indigo-50 p-2 rounded-lg text-indigo-600 hidden sm:block">
+            <div class="flex items-center gap-3 md:border-l md:border-slate-200 dark:md:border-slate-800 md:pl-6">
+                <div class="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400 hidden sm:block">
                     <i data-lucide="filter" class="w-4 h-4"></i>
                 </div>
                 <div class="flex flex-col">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 ml-1">Filter Tugas Utama</label>
+                    <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5 ml-1">Filter Tugas Utama</label>
                     <div class="flex items-center gap-2">
                         <select 
                             onchange="location.href='?tab=unsur&f_tugas=' + this.value" 
-                            class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700 min-w-[200px] max-w-xs"
+                            class="border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-950 font-semibold text-slate-700 dark:text-slate-300 min-w-[200px] max-w-xs"
                         >
                             <option value="">Semua Tugas</option>
                             <?php foreach($tugas_list as $t): ?>
@@ -306,7 +336,7 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                             <?php endforeach; ?>
                         </select>
                         <?php if($f_tugas): ?>
-                            <a href="?tab=unsur" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Hapus Filter">
+                            <a href="?tab=unsur" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-md transition-colors" title="Hapus Filter">
                                 <i data-lucide="x-circle" class="w-4 h-4"></i>
                             </a>
                         <?php endif; ?>
@@ -316,17 +346,17 @@ $active_tab = $_GET['tab'] ?? 'tugas';
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
-                <h2 class="text-lg font-bold mb-4">Form Unsur Tugas</h2>
+            <div class="md:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-fit">
+                <h2 class="text-lg font-bold mb-4 dark:text-white">Form Unsur Tugas</h2>
                 <form method="POST">
                     <input type="hidden" name="action" id="form_action" value="add_unsur">
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Kode</label>
-                        <input type="text" name="kode" id="input_kode" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Kode</label>
+                        <input type="text" name="kode" id="input_kode" required class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Tugas Utama</label>
-                        <select name="tugas_utama" id="input_tugas_utama" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Tugas Utama</label>
+                        <select name="tugas_utama" id="input_tugas_utama" required class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="">-- Pilih --</option>
                             <?php foreach($tugas_list as $t): ?>
                             <option value="<?= $t['kode'] ?>"><?= $t['kode'] ?> - <?= htmlspecialchars(substr($t['judul'], 0, 30)) ?>...</option>
@@ -334,18 +364,18 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                         </select>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Judul Unsur</label>
-                        <textarea name="judul" id="input_judul" required rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Judul Unsur</label>
+                        <textarea name="judul" id="input_judul" required rows="3" class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">Tambah Data</button>
-                        <button type="button" id="form_cancel_btn" onclick="cancelEdit('add_unsur')" class="hidden bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300">Batal</button>
+                        <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600">Tambah Data</button>
+                        <button type="button" id="form_cancel_btn" onclick="cancelEdit('add_unsur')" class="hidden bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-700">Batal</button>
                     </div>
                 </form>
             </div>
-            <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-300 overflow-auto max-h-[600px] custom-scrollbar">
+            <div class="md:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 overflow-auto max-h-[600px] custom-scrollbar">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
+                    <thead class="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500">
                         <tr>
                             <th class="px-4 py-3 font-medium">Kode</th>
                             <th class="px-4 py-3 font-medium">Tugas</th>
@@ -353,22 +383,22 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                             <th class="px-4 py-3 font-medium w-24">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         <?php foreach($unsur_list as $row): ?>
-                        <tr class="hover:bg-slate-50">
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors">
                             <td class="px-4 py-3 align-top">
-                                <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-100 whitespace-nowrap">
+                                <span class="font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md border border-indigo-100 dark:border-indigo-900/50 whitespace-nowrap">
                                     <?= htmlspecialchars($row['kode']) ?>
                                 </span>
                             </td>
                             <td class="px-4 py-3 align-top"><?= htmlspecialchars($row['tugas_utama']) ?></td>
                             <td class="px-4 py-3 align-top"><?= htmlspecialchars($row['judul']) ?></td>
                             <td class="px-4 py-3 align-top flex gap-2">
-                                <button onclick='fillEdit("edit_unsur", <?= json_encode($row) ?>)' class="text-blue-600 hover:text-blue-800"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button onclick='fillEdit("edit_unsur", <?= json_encode($row) ?>)' class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i data-lucide="edit" class="w-4 h-4"></i></button>
                                 <form method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
                                     <input type="hidden" name="action" value="delete_unsur">
                                     <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
-                                    <button type="submit" class="text-red-600 hover:text-red-800"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><i data-lucide="trash" class="w-4 h-4"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -380,23 +410,23 @@ $active_tab = $_GET['tab'] ?? 'tugas';
 
         <?php elseif ($active_tab === 'indikator'): ?>
         <div class="flex flex-col gap-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-300 flex flex-wrap justify-between items-center gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 flex flex-wrap justify-between items-center gap-4">
                 <div class="flex flex-wrap items-center gap-6">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900 leading-tight">Indikator Kerja</h2>
-                        <p class="text-slate-500 text-xs font-medium">Total <?= count($indikator_list) ?> Data</p>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Indikator Kerja</h2>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Total <?= count($indikator_list) ?> Data</p>
                     </div>
                     
-                    <div class="flex items-center gap-3 md:border-l md:border-slate-200 md:pl-6">
-                        <div class="bg-indigo-50 p-2 rounded-lg text-indigo-600 hidden sm:block">
+                    <div class="flex items-center gap-3 md:border-l md:border-slate-200 dark:md:border-slate-800 md:pl-6">
+                        <div class="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400 hidden sm:block">
                             <i data-lucide="filter" class="w-4 h-4"></i>
                         </div>
                         <div class="flex flex-col">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 ml-1">Filter Unsur</label>
+                            <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5 ml-1">Filter Unsur</label>
                             <div class="flex items-center gap-2">
                                 <select 
                                     onchange="location.href='?tab=indikator&f_unsur=' + this.value" 
-                                    class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700 min-w-[200px] max-w-xs"
+                                    class="border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-950 font-semibold text-slate-700 dark:text-slate-300 min-w-[200px] max-w-xs"
                                 >
                                     <option value="">Semua Unsur</option>
                                     <?php 
@@ -409,7 +439,7 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                                     <?php endwhile; ?>
                                 </select>
                                 <?php if($f_unsur): ?>
-                                    <a href="?tab=indikator" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Hapus Filter">
+                                    <a href="?tab=indikator" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-md transition-colors" title="Hapus Filter">
                                         <i data-lucide="x-circle" class="w-4 h-4"></i>
                                     </a>
                                 <?php endif; ?>
@@ -420,16 +450,16 @@ $active_tab = $_GET['tab'] ?? 'tugas';
 
                 <button 
                     onclick="cancelEdit('add_indikator'); openModal('modal_indikator')"
-                    class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all flex items-center gap-2"
+                    class="bg-indigo-600 dark:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-lg shadow-indigo-100 dark:shadow-none transition-all flex items-center gap-2"
                 >
                     <i data-lucide="plus-circle" class="w-5 h-5"></i>
                     Tambah Indikator
                 </button>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-300 overflow-auto max-h-[700px] custom-scrollbar">
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 overflow-auto max-h-[700px] custom-scrollbar">
                 <table class="w-full text-left text-sm min-w-[600px]">
-                    <thead class="bg-slate-50 border-b border-slate-300 text-slate-600">
+                    <thead class="bg-slate-50 dark:bg-slate-950 border-b border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                         <tr>
                             <th class="px-6 py-4 font-bold">Kode</th>
                             <th class="px-6 py-4 font-bold">Unsur</th>
@@ -438,25 +468,25 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                             <th class="px-6 py-4 font-bold w-24">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         <?php foreach($indikator_list as $row): ?>
-                        <tr class="hover:bg-slate-50 transition-colors">
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors">
                             <td class="px-6 py-4 align-top">
-                                <span class="font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 whitespace-nowrap text-xs">
+                                <span class="font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md border border-indigo-100 dark:border-indigo-900/50 whitespace-nowrap text-xs">
                                     <?= htmlspecialchars($row['kode']) ?>
                                 </span>
                             </td>
-                            <td class="px-6 py-4 align-top font-medium text-slate-700"><?= htmlspecialchars($row['unsur_tugas_utama']) ?></td>
-                            <td class="px-6 py-4 align-top text-slate-700 leading-relaxed"><?= htmlspecialchars($row['judul']) ?></td>
-                            <td class="px-6 py-4 align-top text-slate-500 italic text-xs leading-relaxed"><?= htmlspecialchars($row['data_kinerja']) ?></td>
+                            <td class="px-6 py-4 align-top font-medium text-slate-700 dark:text-slate-300"><?= htmlspecialchars($row['unsur_tugas_utama']) ?></td>
+                            <td class="px-6 py-4 align-top text-slate-700 dark:text-slate-300 leading-relaxed"><?= htmlspecialchars($row['judul']) ?></td>
+                            <td class="px-6 py-4 align-top text-slate-500 dark:text-slate-500 italic text-xs leading-relaxed"><?= htmlspecialchars($row['data_kinerja']) ?></td>
                             <td class="px-6 py-4 align-top flex gap-3">
-                                <button onclick='fillEdit("edit_indikator", <?= json_encode($row) ?>)' class="text-blue-600 hover:text-blue-800 p-1 bg-blue-50 rounded" title="Edit">
+                                <button onclick='fillEdit("edit_indikator", <?= json_encode($row) ?>)' class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1 bg-blue-50 dark:bg-blue-900/30 rounded" title="Edit">
                                     <i data-lucide="edit" class="w-4 h-4"></i>
                                 </button>
                                 <form method="POST" onsubmit="return confirm('Yakin hapus indikator ini?')">
                                     <input type="hidden" name="action" value="delete_indikator">
                                     <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
-                                    <button type="submit" class="text-red-600 hover:text-red-800 p-1 bg-red-50 rounded" title="Hapus">
+                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 p-1 bg-red-50 dark:bg-red-900/30 rounded" title="Hapus">
                                         <i data-lucide="trash" class="w-4 h-4"></i>
                                     </button>
                                 </form>
@@ -472,11 +502,11 @@ $active_tab = $_GET['tab'] ?? 'tugas';
     </div>
 
     <!-- Modal Form Indikator Kerja -->
-    <div id="modal_indikator" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-slate-900">Form Indikator Kerja</h2>
-                <button onclick="closeModal('modal_indikator')" class="text-slate-400 hover:text-slate-600 transition-colors">
+    <div id="modal_indikator" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div class="bg-slate-50 dark:bg-slate-950 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Form Indikator Kerja</h2>
+                <button onclick="closeModal('modal_indikator')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -484,12 +514,12 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                 <input type="hidden" name="action" id="form_action" value="add_indikator">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Kode Indikator</label>
-                        <input type="text" name="kode" id="input_kode" placeholder="Contoh: 1.1.1" required class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Kode Indikator</label>
+                        <input type="text" name="kode" id="input_kode" placeholder="Contoh: 1.1.1" required class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-950 text-slate-800 dark:text-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Unsur Tugas Utama</label>
-                        <select name="unsur_tugas_utama" id="input_unsur_tugas_utama" required class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50">
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Unsur Tugas Utama</label>
+                        <select name="unsur_tugas_utama" id="input_unsur_tugas_utama" required class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white">
                             <option value="">-- Pilih Unsur --</option>
                             <?php foreach($unsur_list as $u): ?>
                             <option value="<?= $u['kode'] ?>"><?= $u['kode'] ?> - <?= htmlspecialchars(substr($u['judul'], 0, 50)) ?>...</option>
@@ -497,21 +527,21 @@ $active_tab = $_GET['tab'] ?? 'tugas';
                         </select>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Judul Indikator</label>
-                        <textarea name="judul" id="input_judul" required rows="2" placeholder="Masukkan deskripsi indikator..." class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"></textarea>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Judul Indikator</label>
+                        <textarea name="judul" id="input_judul" required rows="2" placeholder="Masukkan deskripsi indikator..." class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-950 text-slate-800 dark:text-white"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Data Kinerja yang Diharapkan</label>
-                        <textarea name="data_kinerja" id="input_data_kinerja" rows="3" placeholder="Dokumen atau bukti yang diperlukan..." class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"></textarea>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Data Kinerja yang Diharapkan</label>
+                        <textarea name="data_kinerja" id="input_data_kinerja" rows="3" placeholder="Dokumen atau bukti yang diperlukan..." class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-950 text-slate-800 dark:text-white"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Bukti Otentik Kualitas Kinerja</label>
-                        <textarea name="bukti_otentik" id="input_bukti_otentik" rows="3" placeholder="Masukkan bukti otentik kualitas kinerja..." class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"></textarea>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Bukti Otentik Kualitas Kinerja</label>
+                        <textarea name="bukti_otentik" id="input_bukti_otentik" rows="3" placeholder="Masukkan bukti otentik kualitas kinerja..." class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-950 text-slate-800 dark:text-white"></textarea>
                     </div>
                 </div>
                 <div class="mt-8 flex gap-3">
-                    <button type="button" onclick="closeModal('modal_indikator')" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Batal</button>
-                    <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all">Simpan Data</button>
+                    <button type="button" onclick="closeModal('modal_indikator')" class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Batal</button>
+                    <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-lg shadow-indigo-200 dark:shadow-none transition-all">Simpan Data</button>
                 </div>
             </form>
         </div>
@@ -521,6 +551,30 @@ $active_tab = $_GET['tab'] ?? 'tugas';
     <script>
         lucide.createIcons();
         
+        function updateThemeIcon() {
+            const icon = document.getElementById('theme-icon');
+            if (document.documentElement.classList.contains('dark')) {
+                icon.setAttribute('data-lucide', 'sun');
+            } else {
+                icon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeIcon();
+        }
+
+        // Initialize icon on load
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
         // Mempertahankan tab setelah submit
         if(window.history.replaceState) {
             window.history.replaceState(null, null, window.location.href);

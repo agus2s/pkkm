@@ -1,8 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "@Pesantren1", "pkkm");
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once 'db.php';
 
 $code = $_GET['code'] ?? '';
 
@@ -75,6 +72,31 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script>
+        // Pre-initialization to prevent flash
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -83,6 +105,10 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
         .score-radio-input:checked + div {
             background-color: #4f46e5;
             border-color: #4f46e5;
@@ -90,33 +116,42 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
             transform: scale(1.1);
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
+        .dark .score-radio-input:checked + div {
+            background-color: #6366f1;
+            border-color: #6366f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen pb-12 transition-colors duration-300">
 
     <!-- Navigation Drawer -->
-    <div id="nav-drawer" class="fixed inset-y-0 left-0 w-80 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out border-r border-slate-200 flex flex-col">
-        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h2 class="font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="menu" class="w-5 h-5 text-indigo-600"></i>
+    <div id="nav-drawer" class="fixed inset-y-0 left-0 w-80 bg-white dark:bg-slate-900 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out border-r border-slate-200 dark:border-slate-800 flex flex-col">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+            <h2 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <i data-lucide="menu" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
                 Navigasi Instrumen
             </h2>
-            <button onclick="toggleDrawer()" class="p-2 hover:bg-slate-200 rounded-lg text-slate-400">
+            <button onclick="toggleDrawer()" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-400">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
+
         <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
             <div class="space-y-6">
                 <?php foreach ($hierarchy as $t): ?>
                 <div class="space-y-2">
-                    <div class="flex items-start gap-2 px-2 py-1 text-xs font-black text-slate-400 uppercase tracking-widest" title="<?php echo htmlspecialchars($t['judul']); ?>">
-                        <span class="text-indigo-600 shrink-0">Tugas <?php echo $t['kode']; ?></span>
+                    <div class="flex items-start gap-2 px-2 py-1 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest" title="<?php echo htmlspecialchars($t['judul']); ?>">
+                        <span class="text-indigo-600 dark:text-indigo-400 shrink-0">Tugas <?php echo $t['kode']; ?></span>
                     </div>
-                    <div class="space-y-1 ml-2 border-l-2 border-slate-100 pl-2">
+                    <div class="space-y-1 ml-2 border-l-2 border-slate-100 dark:border-slate-800 pl-2">
                         <?php foreach ($t['unsurs'] as $u): ?>
                         <div class="space-y-1">
-                            <div class="text-[11px] font-bold text-slate-500 py-1 px-2 flex items-start gap-2" title="<?php echo htmlspecialchars($u['judul']); ?>">
-                                <span class="shrink-0 text-indigo-400">Unsur <?php echo $u['kode']; ?></span>
+                            <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400 py-1 px-2 flex items-start gap-2" title="<?php echo htmlspecialchars($u['judul']); ?>">
+                                <span class="shrink-0 text-indigo-400 dark:text-indigo-500">Unsur <?php echo $u['kode']; ?></span>
                             </div>
                             <div class="flex flex-wrap gap-1 ml-2 px-2">
                                 <?php foreach ($u['indicators'] as $i): ?>
@@ -125,7 +160,7 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                                    class="px-2 py-1 rounded-md text-[10px] font-bold transition-all 
                                    <?php echo ($i['kode'] === $code) 
                                        ? 'bg-indigo-600 text-white shadow-md' 
-                                       : 'bg-slate-100 text-slate-500 hover:bg-indigo-100 hover:text-indigo-600'; ?>">
+                                       : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'; ?>">
                                     <?php echo $i['kode']; ?>
                                 </a>
                                 <?php endforeach; ?>
@@ -143,19 +178,26 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
     <div id="drawer-overlay" onclick="toggleDrawer()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300"></div>
 
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
+    <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
         <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-1 sm:gap-3">
-                <button onclick="toggleDrawer()" class="p-2 hover:bg-slate-100 rounded-lg text-indigo-600 transition-colors mr-1">
+                <button onclick="toggleDrawer()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-indigo-600 dark:text-indigo-400 transition-colors mr-1">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
-                <a href="index.php" class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hidden sm:flex">
+                <a href="index.php" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400 hidden sm:flex">
                     <i data-lucide="home" class="w-5 h-5"></i>
                 </a>
-                <h1 class="font-bold text-slate-800 text-sm sm:text-base">Detail Indikator</h1>
+                <h1 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Detail Indikator</h1>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded tracking-tighter sm:tracking-normal">
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button 
+                    onclick="toggleTheme()"
+                    class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400"
+                    title="Ganti Tema"
+                >
+                    <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
+                </button>
+                <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded tracking-tighter sm:tracking-normal">
                     <?php echo ($currentIndex + 1); ?> / <?php echo count($all_codes); ?>
                 </div>
             </div>
@@ -166,54 +208,54 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
         
         <!-- Breadcrumb / Context -->
         <div class="mb-6 space-y-1">
-            <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 uppercase tracking-wider">
+            <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
                 <span>Tugas <?php echo $indicator['tugas_kode']; ?></span>
-                <i data-lucide="chevron-right" class="w-3 h-3 text-slate-300"></i>
+                <i data-lucide="chevron-right" class="w-3 h-3 text-slate-300 dark:text-slate-700"></i>
                 <span>Unsur <?php echo $indicator['unsur_tugas_utama']; ?></span>
             </div>
-            <h2 class="text-slate-500 text-sm font-medium leading-relaxed">
+            <h2 class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed">
                 <?php echo $indicator['tugas_judul']; ?> — <?php echo $indicator['unsur_judul']; ?>
             </h2>
         </div>
 
         <!-- Main Content Card -->
-        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div class="p-8 md:p-10">
                 <div class="flex flex-col md:flex-row md:items-start gap-6 mb-10">
-                    <div class="bg-indigo-600 text-white text-3xl font-bold w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200">
+                    <div class="bg-indigo-600 dark:bg-indigo-500 text-white <?php echo strlen($indicator['kode']) > 5 ? 'text-2xl' : 'text-3xl'; ?> font-bold min-w-[5rem] w-fit h-20 px-4 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200 dark:shadow-none transition-all">
                         <?php echo $indicator['kode']; ?>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-3">
                             <?php echo $indicator['judul']; ?>
                         </h3>
                         <div class="flex flex-wrap gap-2">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                                 <i data-lucide="database" class="w-3 h-3 mr-1.5"></i>
                                 Data Kinerja yang Diharapkan
                             </span>
                         </div>
-                        <p class="mt-3 text-slate-600 leading-relaxed italic">
+                        <p class="mt-3 text-slate-600 dark:text-slate-400 leading-relaxed italic">
                             "<?php echo $indicator['data_kinerja']; ?>"
                         </p>
                     </div>
                 </div>
 
                 <!-- Section: Bukti Otentik yang Diminta -->
-                <div class="mb-10 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <div class="mb-10 p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div class="flex items-center gap-2 mb-4">
-                        <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
+                        <div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
                             <i data-lucide="info" class="w-5 h-5"></i>
                         </div>
-                        <h4 class="font-bold text-slate-800">Bukti Otentik Kualitas Kinerja</h4>
+                        <h4 class="font-bold text-slate-800 dark:text-white">Bukti Otentik Kualitas Kinerja</h4>
                     </div>
                     <?php 
                         $formatted_evidence = preg_replace('/^\((\d+)\)/m', '🔵 $1.', $requested_evidence);
                     ?>
-                    <div class="text-slate-600 leading-normal whitespace-pre-line bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm"><?php echo htmlspecialchars($formatted_evidence); ?></div>
+                    <div class="text-slate-600 dark:text-slate-300 leading-normal whitespace-pre-line bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/50 dark:border-slate-800 shadow-sm"><?php echo htmlspecialchars($formatted_evidence); ?></div>
                 </div>
 
-                <hr class="border-slate-100 mb-10">
+                <hr class="border-slate-100 dark:border-slate-800 mb-10">
 
                 <div class="space-y-12">
                     <!-- Section: Bukti Otentik yang Diinput -->
@@ -222,35 +264,35 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                     <div class="lg:col-span-2">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center gap-2">
-                                <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
+                                <div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
                                     <i data-lucide="link" class="w-5 h-5"></i>
                                 </div>
-                                <h4 class="font-bold text-slate-800">Bukti Otentik yang Diinput</h4>
+                                <h4 class="font-bold text-slate-800 dark:text-white">Bukti Otentik yang Diinput</h4>
                             </div>
-                            <button onclick="toggleEvidenceForm()" class="text-indigo-600 hover:text-indigo-700 font-semibold text-sm flex items-center gap-1">
+                            <button onclick="toggleEvidenceForm()" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold text-sm flex items-center gap-1">
                                 <i data-lucide="plus" class="w-4 h-4"></i> Tambah Link
                             </button>
                         </div>
 
                         <div id="evidence-list" class="space-y-3">
                             <?php if (empty($evidences)): ?>
-                                <div class="p-6 border-2 border-dashed border-slate-200 rounded-2xl text-center text-slate-400">
+                                <div class="p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-center text-slate-400 dark:text-slate-600">
                                     <i data-lucide="file-x" class="w-8 h-8 mx-auto mb-2 opacity-20"></i>
                                     <p class="text-sm">Belum ada link bukti</p>
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($evidences as $evidence): ?>
-                                <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl group hover:border-indigo-200 hover:shadow-md transition-all">
-                                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-500">
+                                <div class="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl group hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-md transition-all">
+                                    <div class="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-500 dark:text-indigo-400">
                                         <i data-lucide="file-text" class="w-4 h-4"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <a href="<?php echo $evidence['url']; ?>" target="_blank" class="block font-medium text-slate-700 text-sm truncate hover:text-indigo-600 transition-colors">
+                                        <a href="<?php echo $evidence['url']; ?>" target="_blank" class="block font-medium text-slate-700 dark:text-slate-200 text-sm truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                             <?php echo $evidence['title']; ?>
                                         </a>
-                                        <span class="text-[10px] text-slate-400 block truncate"><?php echo $evidence['url']; ?></span>
+                                        <span class="text-[10px] text-slate-400 dark:text-slate-500 block truncate"><?php echo $evidence['url']; ?></span>
                                     </div>
-                                    <button onclick="removeEvidence('<?php echo $indicator['kode']; ?>', <?php echo $evidence['id']; ?>)" class="text-slate-300 hover:text-red-500 p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                                    <button onclick="removeEvidence('<?php echo $indicator['kode']; ?>', <?php echo $evidence['id']; ?>)" class="text-slate-300 dark:text-slate-600 hover:text-red-500 p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
                                 </div>
@@ -259,30 +301,30 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                         </div>
 
                         <!-- Form Tambah Bukti -->
-                        <div id="evidence-form" class="mt-4 hidden p-4 bg-white border border-indigo-200 rounded-2xl shadow-xl shadow-indigo-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div id="evidence-form" class="mt-4 hidden p-4 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl shadow-xl shadow-indigo-50 dark:shadow-none animate-in fade-in slide-in-from-top-2 duration-300">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                <input type="text" id="ev-title" placeholder="Nama Dokumen" class="text-sm border-slate-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 border outline-none">
-                                <input type="text" id="ev-url" placeholder="Link URL" class="text-sm border-slate-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 border outline-none">
+                                <input type="text" id="ev-title" placeholder="Nama Dokumen" class="text-sm border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 border outline-none">
+                                <input type="text" id="ev-url" placeholder="Link URL" class="text-sm border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-xl focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 border outline-none">
                             </div>
                             <div class="flex gap-2 justify-end">
-                                <button onclick="toggleEvidenceForm()" class="px-4 py-1.5 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-50 transition-all">Batal</button>
-                                <button onclick="saveEvidence('<?php echo $indicator['kode']; ?>')" class="px-6 bg-indigo-600 text-white font-bold text-xs py-1.5 rounded-lg hover:bg-indigo-700 transition-all">Simpan Link</button>
+                                <button onclick="toggleEvidenceForm()" class="px-4 py-1.5 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold text-xs rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Batal</button>
+                                <button onclick="saveEvidence('<?php echo $indicator['kode']; ?>')" class="px-6 bg-indigo-600 dark:bg-indigo-500 text-white font-bold text-xs py-1.5 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all">Simpan Link</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Section: Score Level -->
-                    <div class="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 h-fit">
+                    <div class="bg-slate-50/50 dark:bg-slate-950/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 h-fit">
                         <div class="flex items-center gap-2 mb-6">
-                            <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
+                            <div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
                                 <i data-lucide="star" class="w-5 h-5"></i>
                             </div>
-                            <h4 class="font-bold text-slate-800">Level Nilai</h4>
+                            <h4 class="font-bold text-slate-800 dark:text-white">Level Nilai</h4>
                         </div>
                         
                         <div class="grid grid-cols-4 gap-3">
                             <?php for ($i = 1; $i <= 4; $i++): ?>
-                            <label class="cursor-pointer group">
+                            <label class="cursor-pointer group relative">
                                 <input 
                                     type="radio" 
                                     name="score"
@@ -291,36 +333,42 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                                     <?php echo ($indicator['hasil_kinerja'] == $i) ? 'checked' : ''; ?>
                                     onchange="updateScore('<?php echo $indicator['kode']; ?>', <?php echo $i; ?>)"
                                 />
-                                <div class="aspect-square rounded-xl flex items-center justify-center border-2 border-slate-200 bg-white text-slate-400 font-black text-xl group-hover:border-indigo-300 group-hover:text-indigo-400 transition-all shadow-sm">
+                                <div class="aspect-square rounded-xl flex items-center justify-center border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-600 font-black text-xl group-hover:border-indigo-300 dark:group-hover:border-indigo-700 group-hover:text-indigo-400 dark:group-hover:text-indigo-500 transition-all shadow-sm">
                                     <?php echo $i; ?>
                                 </div>
+                                <span class="absolute -bottom-1 -right-1 text-[8px] font-bold text-slate-300 dark:text-slate-700 bg-white dark:bg-slate-900 px-1 rounded border border-slate-100 dark:border-slate-800 hidden md:block">[<?php echo $i; ?>]</span>
                             </label>
                             <?php endfor; ?>
                         </div>
                         
-                        <div id="save-status" class="mt-4 text-[10px] font-bold text-green-500 hidden items-center gap-1 uppercase tracking-wider">
-                            <i data-lucide="check" class="w-3 h-3"></i> Tersimpan
+                        <div class="mt-4 flex items-center justify-between">
+                            <div id="save-status" class="text-[10px] font-bold text-green-500 hidden items-center gap-1 uppercase tracking-wider">
+                                <i data-lucide="check" class="w-3 h-3"></i> Tersimpan
+                            </div>
+                            <button onclick="updateScore('<?php echo $indicator['kode']; ?>', 0); document.querySelectorAll('input[name=\'score\']').forEach(r => r.checked = false);" class="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest flex items-center gap-1">
+                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset Nilai <span class="opacity-50 ml-1 hidden md:inline">[0]</span>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Footer Navigation -->
-            <div class="bg-slate-50 border-t border-slate-100 p-6 flex items-center justify-between">
+            <div class="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 p-6 flex items-center justify-between">
                 <div>
                     <?php if ($prevCode): ?>
                     <a href="?code=<?php echo $prevCode; ?>" class="flex items-center gap-3 group">
-                        <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200 transition-all shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:border-indigo-200 dark:group-hover:border-indigo-800 transition-all shadow-sm">
                             <i data-lucide="chevron-left" class="w-5 h-5"></i>
                         </div>
                         <div class="hidden sm:block">
-                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Sebelumnya</span>
-                            <span class="block text-sm font-bold text-slate-600"><?php echo $prevCode; ?></span>
+                            <span class="block text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Sebelumnya <span class="ml-1 opacity-50 hidden md:inline">[←]</span></span>
+                            <span class="block text-sm font-bold text-slate-600 dark:text-slate-200"><?php echo $prevCode; ?></span>
                         </div>
                     </a>
                     <?php else: ?>
                     <div class="opacity-30 flex items-center gap-3 cursor-not-allowed">
-                        <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-300">
+                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-700">
                             <i data-lucide="chevron-left" class="w-5 h-5"></i>
                         </div>
                     </div>
@@ -328,7 +376,7 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                 </div>
 
                 <div class="text-center hidden md:block">
-                    <a href="index.php" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">
+                    <a href="index.php" class="text-xs font-bold text-slate-400 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors uppercase tracking-widest">
                         Kembali ke Dashboard
                     </a>
                 </div>
@@ -337,10 +385,10 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                     <?php if ($nextCode): ?>
                     <a href="?code=<?php echo $nextCode; ?>" class="flex items-center gap-3 group text-right">
                         <div class="hidden sm:block">
-                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Selanjutnya</span>
-                            <span class="block text-sm font-bold text-slate-600"><?php echo $nextCode; ?></span>
+                            <span class="block text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Selanjutnya <span class="ml-1 opacity-50 hidden md:inline">[→]</span></span>
+                            <span class="block text-sm font-bold text-slate-600 dark:text-slate-200"><?php echo $nextCode; ?></span>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200 transition-all shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:border-indigo-200 dark:group-hover:border-indigo-800 transition-all shadow-sm">
                             <i data-lucide="chevron-right" class="w-5 h-5"></i>
                         </div>
                     </a>
@@ -348,9 +396,9 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                     <a href="index.php" class="flex items-center gap-3 group">
                         <div class="hidden sm:block">
                             <span class="block text-[10px] font-bold text-indigo-400 uppercase">Selesai</span>
-                            <span class="block text-sm font-bold text-indigo-600 tracking-tight">Lihat Hasil</span>
+                            <span class="block text-sm font-bold text-indigo-600 dark:text-indigo-400 tracking-tight">Lihat Hasil</span>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm shadow-indigo-100">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 dark:group-hover:bg-indigo-500 group-hover:text-white transition-all shadow-sm shadow-indigo-100 dark:shadow-none">
                             <i data-lucide="check-circle" class="w-5 h-5"></i>
                         </div>
                     </a>
@@ -380,6 +428,61 @@ $evidences = json_decode($indicator['tautan_bukti'] ?: '[]', true);
                 setTimeout(() => overlay.classList.add('opacity-100'), 10);
             }
         }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('theme-icon');
+            if (document.documentElement.classList.contains('dark')) {
+                icon.setAttribute('data-lucide', 'sun');
+            } else {
+                icon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeIcon();
+        }
+
+        // Initialize icon on load
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
+        // --- NAVIGATION SHORTCUTS ---
+        const prevCode = "<?php echo $prevCode; ?>";
+        const nextCode = "<?php echo $nextCode; ?>";
+
+        document.addEventListener('keydown', (e) => {
+            // Jangan aktifkan shortcut jika sedang mengetik di input/textarea
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+            // Shortcut Navigasi
+            if (e.key === 'ArrowLeft' && prevCode) {
+                window.location.href = '?code=' + prevCode;
+            } else if (e.key === 'ArrowRight' && nextCode) {
+                window.location.href = '?code=' + nextCode;
+            }
+
+            // Shortcut Penilaian (0-4)
+            if (['0', '1', '2', '3', '4'].includes(e.key)) {
+                const score = parseInt(e.key);
+                const code = "<?php echo $indicator['kode']; ?>";
+                
+                // Update Radio Button visual
+                const radios = document.querySelectorAll('input[name="score"]');
+                radios.forEach(r => {
+                    r.checked = (parseInt(r.value) === score);
+                });
+
+                // Kirim ke server
+                updateScore(code, score);
+            }
+        });
 
         function updateScore(code, score) {
             const formData = new FormData();
