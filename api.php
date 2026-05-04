@@ -69,6 +69,9 @@ if ($action === 'get') {
     } else {
         echo json_encode(["status" => "error", "message" => "Invalid data"]);
     }
+} elseif ($action === 'reset_all') {
+    $conn->query("UPDATE indikator_kerja SET hasil_kinerja = 0, tautan_bukti = '[]'");
+    echo json_encode(["status" => "success"]);
 }
 
 $conn->close();

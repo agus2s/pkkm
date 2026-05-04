@@ -94,16 +94,32 @@
             let totalIndicators = 0;
             let answeredIndicators = 0;
             let totalScore = 0;
+            let taskStats = [];
 
             pkkmData.forEach(task => {
+                let taskTotalIndicators = 0;
+                let taskAnsweredIndicators = 0;
+                let taskTotalScore = 0;
+
                 task.subTasks.forEach(sub => {
                     sub.indicators.forEach(ind => {
                         totalIndicators++;
+                        taskTotalIndicators++;
                         if (state.scores[ind.code]) {
                             answeredIndicators++;
+                            taskAnsweredIndicators++;
                             totalScore += state.scores[ind.code];
+                            taskTotalScore += state.scores[ind.code];
                         }
                     });
+                });
+
+                taskStats.push({
+                    id: task.id,
+                    title: task.title,
+                    score: taskTotalScore,
+                    max: taskTotalIndicators * 4,
+                    progress: taskTotalIndicators > 0 ? (taskAnsweredIndicators / taskTotalIndicators) * 100 : 0
                 });
             });
 
@@ -117,7 +133,33 @@
             else if (percentage >= 76) { grade = "Baik"; gradeColor = "text-blue-600"; bgGrade = "bg-blue-50"; }
             else if (percentage >= 61) { grade = "Cukup"; gradeColor = "text-amber-600"; bgGrade = "bg-amber-50"; }
 
-            return { totalIndicators, answeredIndicators, totalScore, maxScore, percentage, grade, gradeColor, bgGrade };
+            return { totalIndicators, answeredIndicators, totalScore, maxScore, percentage, grade, gradeColor, bgGrade, taskStats };
+        }
+
+        async function resetAll() {
+            if (!confirm('Apakah Anda yakin ingin menghapus semua nilai dan bukti yang telah diinput? Tindakan ini tidak dapat dibatalkan.')) return;
+            
+            try {
+                const response = await fetch('api.php?action=reset_all');
+                const result = await response.json();
+                if (result.status === 'success') {
+                    state.scores = {};
+                    // Also need to refresh pkkmData or just clear scores in it
+                    pkkmData.forEach(task => {
+                        task.subTasks.forEach(sub => {
+                            sub.indicators.forEach(ind => {
+                                ind.score = 0;
+                                ind.evidences = [];
+                            });
+                        });
+                    });
+                    renderApp();
+                    alert('Semua nilai telah direset.');
+                }
+            } catch (error) {
+                console.error('Reset error:', error);
+                alert('Gagal mereset nilai.');
+            }
         }
 
         // --- COMPONENTS ---
@@ -270,20 +312,54 @@
                                 </div>
                             </div>
 
-                            <div class="bg-slate-50 dark:bg-slate-950 rounded-[2rem] p-10 text-center border-2 border-dashed border-slate-200 dark:border-slate-800">
+                            <div class="bg-slate-50 dark:bg-slate-950 rounded-[2rem] p-10 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 mb-12">
                                 <p class="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-[0.2em] text-xs mb-4">Predikat Kinerja</p>
                                 <div class="text-6xl font-black tracking-tighter ${stats.gradeColor} dark:text-indigo-400 mb-2">
                                     ${stats.grade}
                                 </div>
                             </div>
+
+                            <div class="mb-12">
+                                <h3 class="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <i data-lucide="list-checks" class="w-6 h-6 text-indigo-600"></i>
+                                    Rekap Per Tugas Utama
+                                </h3>
+                                <div class="grid grid-cols-1 gap-4">
+                                    ${stats.taskStats.map(task => `
+                                        <div class="flex items-center justify-between p-6 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-lg">
+                                                    ${task.id}
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold text-slate-800 dark:text-slate-100 leading-tight">${task.title}</h4>
+                                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Progres: ${Math.round(task.progress)}%</p>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Skor / Maks</p>
+                                                <p class="text-xl font-black text-slate-900 dark:text-white">
+                                                    <span class="text-indigo-600 dark:text-indigo-400">${task.score}</span>
+                                                    <span class="text-slate-300 dark:text-slate-700 mx-1">/</span>
+                                                    <span>${task.max}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
                             
-                            <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4 print:hidden">
+                            <div class="flex flex-col sm:flex-row justify-center gap-4 print:hidden">
                                 <button onclick="window.print()" class="flex items-center justify-center gap-2 px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-xl shadow-slate-200 dark:shadow-none">
                                     <i data-lucide="printer" class="w-5 h-5"></i>
                                     Cetak Hasil
                                 </button>
                                 <button onclick="setActiveTab(1)" class="flex items-center justify-center gap-2 px-8 py-3 border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-900 transition-all">
                                     Kembali ke Instrumen
+                                </button>
+                                <button onclick="resetAll()" class="flex items-center justify-center gap-2 px-8 py-3 border-2 border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-2xl font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                                    Reset Semua Nilai
                                 </button>
                             </div>
                         </div>
