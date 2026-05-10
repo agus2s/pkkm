@@ -1,5 +1,6 @@
 <?php
 require_once 'db.php';
+require_once 'includes/header.php';
 
 $message = '';
 $messageType = '';
@@ -100,52 +101,124 @@ $active_tab = $_GET['tab'] ?? 'tugas';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor Instrumen PKKM</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: {
-                            bg: '#0f172a',
-                            card: '#1e293b',
-                            border: '#334155'
-                        }
-                    }
-                }
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-header-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            border: none;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #667eea;
+            background: white;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .badge-indigo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { 
+            width: 6px; 
+            height: 6px; 
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track { 
+            background: transparent; 
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+            background: #dee2e6; 
+            border-radius: 10px; 
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .custom-toast {
+            min-width: 250px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
             }
         }
-    </script>
-    <script>
-        // Pre-initialization to prevent flash
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
     </style>
 
     <script>
         function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById(id).classList.add('flex');
+            const modal = new bootstrap.Modal(document.getElementById(id));
+            modal.show();
         }
 
         function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
+            const modal = bootstrap.Modal.getInstance(document.getElementById(id));
+            if (modal) {
+                modal.hide();
+            }
             // Reset form when closing
             const formAction = document.getElementById('form_action').value;
             if (formAction.startsWith('edit_')) {
@@ -160,7 +233,7 @@ $active_tab = $_GET['tab'] ?? 'tugas';
             if (submitBtn) submitBtn.innerText = 'Simpan Perubahan';
             
             const cancelBtn = document.getElementById('form_cancel_btn');
-            if (cancelBtn) cancelBtn.classList.remove('hidden');
+            if (cancelBtn) cancelBtn.style.display = 'block';
             
             for (const key in data) {
                 const el = document.getElementById('input_' + key);
@@ -178,37 +251,48 @@ $active_tab = $_GET['tab'] ?? 'tugas';
         }
 
         function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `fixed bottom-6 right-6 z-[100] p-4 rounded-2xl shadow-2xl flex items-center gap-3 transform transition-all duration-500 translate-y-12 opacity-0 ${type === 'success' ? 'bg-emerald-600 text-white shadow-emerald-200' : 'bg-rose-600 text-white shadow-rose-200'}`;
-            
-            const icon = type === 'success' ? 'check-circle' : 'alert-circle';
-            toast.innerHTML = `
-                <div class="bg-white/20 p-1.5 rounded-lg">
-                    <i data-lucide="${icon}" class="w-5 h-5"></i>
+            // Create toast container if it doesn't exist
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            const toastId = 'toast-' + Date.now();
+            const toastHTML = `
+                <div id="${toastId}" class="toast custom-toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
                 </div>
-                <span class="font-bold text-sm pr-2">${message}</span>
             `;
             
-            document.body.appendChild(toast);
-            lucide.createIcons();
-
-            // Animate in
-            setTimeout(() => {
-                toast.classList.remove('translate-y-12', 'opacity-0');
-            }, 10);
-
-            // Animate out and remove
-            setTimeout(() => {
-                toast.classList.add('translate-y-12', 'opacity-0');
-                setTimeout(() => toast.remove(), 500);
-            }, 4000);
+            container.insertAdjacentHTML('beforeend', toastHTML);
+            
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, {
+                autohide: true,
+                delay: 4000
+            });
+            
+            toast.show();
+            
+            // Remove from DOM after hiding
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
         }
 
         function cancelEdit(defaultAction) {
             document.getElementById('form_action').value = defaultAction;
             document.getElementById('form_submit_btn').innerText = 'Tambah Data';
             const cancelBtn = document.getElementById('form_cancel_btn');
-            if (cancelBtn) cancelBtn.classList.add('hidden');
+            if (cancelBtn) cancelBtn.style.display = 'none';
             
             const inputs = document.querySelectorAll('form input, form textarea, form select');
             inputs.forEach(el => {
@@ -220,25 +304,26 @@ $active_tab = $_GET['tab'] ?? 'tugas';
         }
     </script>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 p-4 md:p-8 transition-colors duration-300">
-    <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <div class="flex items-center gap-4">
-                <button 
-                    onclick="toggleTheme()"
-                    class="p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
-                    title="Ganti Tema"
-                >
-                    <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
-                </button>
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Editor Instrumen PKKM</h1>
-                    <p class="text-slate-600 dark:text-slate-400 text-sm">Kelola Tugas Utama, Unsur Tugas, dan Indikator Kinerja</p>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h1 class="h3 mb-1">Editor Instrumen PKKM</h1>
+                                <p class="text-muted mb-0">Kelola Tugas Utama, Unsur Tugas, dan Indikator Kinerja</p>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <a href="index.php" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>Kembali ke Aplikasi
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <a href="index.php" class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Aplikasi
-            </a>
         </div>
 
         <?php if ($message): ?>
@@ -250,251 +335,321 @@ $active_tab = $_GET['tab'] ?? 'tugas';
         <?php endif; ?>
 
         <!-- Tabs -->
-        <div class="flex border-b border-slate-300 dark:border-slate-800 mb-6">
-            <a href="?tab=tugas" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'tugas' ? 'border-b-2 border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded-t-lg' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white' ?>">Tugas Utama</a>
-            <a href="?tab=unsur" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'unsur' ? 'border-b-2 border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded-t-lg' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white' ?>">Unsur Tugas Utama</a>
-            <a href="?tab=indikator" class="px-6 py-3 font-semibold text-sm <?= $active_tab === 'indikator' ? 'border-b-2 border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded-t-lg' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white' ?>">Indikator Kerja</a>
-        </div>
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link <?= $active_tab === 'tugas' ? 'active' : '' ?>" href="?tab=tugas">
+                    <i class="bi bi-folder me-2"></i>Tugas Utama
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?= $active_tab === 'unsur' ? 'active' : '' ?>" href="?tab=unsur">
+                    <i class="bi bi-folder2-open me-2"></i>Unsur Tugas Utama
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?= $active_tab === 'indikator' ? 'active' : '' ?>" href="?tab=indikator">
+                    <i class="bi bi-list-check me-2"></i>Indikator Kerja
+                </a>
+            </li>
+        </ul>
 
         <?php if ($active_tab === 'tugas'): ?>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-fit">
-                <h2 class="text-lg font-bold mb-4 dark:text-white">Form Tugas Utama</h2>
-                <form method="POST">
-                    <input type="hidden" name="action" id="form_action" value="add_tugas">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Kode</label>
-                        <input type="text" name="kode" id="input_kode" required class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0">Form Tugas Utama</h5>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Judul Tugas</label>
-                        <textarea name="judul" id="input_judul" required rows="3" class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    <div class="card-body">
+                        <form method="POST">
+                            <input type="hidden" name="action" id="form_action" value="add_tugas">
+                            <div class="mb-3">
+                                <label for="input_kode" class="form-label">Kode</label>
+                                <input type="text" name="kode" id="input_kode" required class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label for="input_judul" class="form-label">Judul Tugas</label>
+                                <textarea name="judul" id="input_judul" required rows="3" class="form-control"></textarea>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" id="form_submit_btn" class="btn btn-primary flex-fill">Tambah Data</button>
+                                <button type="button" id="form_cancel_btn" onclick="cancelEdit('add_tugas')" class="btn btn-secondary" style="display: none;">Batal</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="flex gap-2">
-                        <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600">Tambah Data</button>
-                        <button type="button" id="form_cancel_btn" onclick="cancelEdit('add_tugas')" class="hidden bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-700">Batal</button>
-                    </div>
-                </form>
+                </div>
             </div>
-            <div class="md:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 overflow-auto max-h-[600px] custom-scrollbar">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500">
-                        <tr>
-                            <th class="px-4 py-3 font-medium">Kode</th>
-                            <th class="px-4 py-3 font-medium">Judul</th>
-                            <th class="px-4 py-3 font-medium w-24">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        <?php foreach($tugas_list as $row): ?>
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors">
-                            <td class="px-4 py-3 align-top">
-                                <span class="font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md border border-indigo-100 dark:border-indigo-900/50 whitespace-nowrap">
-                                    <?= htmlspecialchars($row['kode']) ?>
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 align-top"><?= htmlspecialchars($row['judul']) ?></td>
-                            <td class="px-4 py-3 align-top flex gap-2">
-                                <button onclick='fillEdit("edit_tugas", <?= json_encode($row) ?>)' class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                                <form method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
-                                    <input type="hidden" name="action" value="delete_tugas">
-                                    <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
-                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><i data-lucide="trash" class="w-4 h-4"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0">Daftar Tugas Utama</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive custom-scrollbar" style="max-height: 600px;">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Kode</th>
+                                        <th>Judul</th>
+                                        <th style="width: 120px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($tugas_list as $row): ?>
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-indigo">
+                                                <?= htmlspecialchars($row['kode']) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= htmlspecialchars($row['judul']) ?></td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button onclick='fillEdit("edit_tugas", <?= json_encode($row) ?>)' class="btn btn-sm btn-outline-primary" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form method="POST" onsubmit="return confirm('Yakin hapus data ini?')" style="display: inline;">
+                                                    <input type="hidden" name="action" value="delete_tugas">
+                                                    <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <?php elseif ($active_tab === 'unsur'): ?>
         <!-- Filter Bar Unsur -->
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 flex flex-wrap items-center gap-6 mb-6">
-            <div>
-                <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Unsur Tugas Utama</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Total <?= count($unsur_list) ?> Data</p>
-            </div>
-            
-            <div class="flex items-center gap-3 md:border-l md:border-slate-200 dark:md:border-slate-800 md:pl-6">
-                <div class="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400 hidden sm:block">
-                    <i data-lucide="filter" class="w-4 h-4"></i>
-                </div>
-                <div class="flex flex-col">
-                    <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5 ml-1">Filter Tugas Utama</label>
-                    <div class="flex items-center gap-2">
-                        <select 
-                            onchange="location.href='?tab=unsur&f_tugas=' + this.value" 
-                            class="border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-950 font-semibold text-slate-700 dark:text-slate-300 min-w-[200px] max-w-xs"
-                        >
-                            <option value="">Semua Tugas</option>
-                            <?php foreach($tugas_list as $t): ?>
-                            <option value="<?= $t['kode'] ?>" <?= (string)$f_tugas === (string)$t['kode'] ? 'selected' : '' ?>>
-                                Tugas <?= $t['kode'] ?>: <?= htmlspecialchars(substr($t['judul'], 0, 40)) ?>...
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <?php if($f_tugas): ?>
-                            <a href="?tab=unsur" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-md transition-colors" title="Hapus Filter">
-                                <i data-lucide="x-circle" class="w-4 h-4"></i>
-                            </a>
-                        <?php endif; ?>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-1">Unsur Tugas Utama</h5>
+                        <small class="text-muted">Total <?= count($unsur_list) ?> Data</small>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-fit">
-                <h2 class="text-lg font-bold mb-4 dark:text-white">Form Unsur Tugas</h2>
-                <form method="POST">
-                    <input type="hidden" name="action" id="form_action" value="add_unsur">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Kode</label>
-                        <input type="text" name="kode" id="input_kode" required class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Tugas Utama</label>
-                        <select name="tugas_utama" id="input_tugas_utama" required class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Pilih --</option>
-                            <?php foreach($tugas_list as $t): ?>
-                            <option value="<?= $t['kode'] ?>"><?= $t['kode'] ?> - <?= htmlspecialchars(substr($t['judul'], 0, 30)) ?>...</option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">Judul Unsur</label>
-                        <textarea name="judul" id="input_judul" required rows="3" class="w-full border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600">Tambah Data</button>
-                        <button type="button" id="form_cancel_btn" onclick="cancelEdit('add_unsur')" class="hidden bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-700">Batal</button>
-                    </div>
-                </form>
-            </div>
-            <div class="md:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 overflow-auto max-h-[600px] custom-scrollbar">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500">
-                        <tr>
-                            <th class="px-4 py-3 font-medium">Kode</th>
-                            <th class="px-4 py-3 font-medium">Tugas</th>
-                            <th class="px-4 py-3 font-medium">Judul</th>
-                            <th class="px-4 py-3 font-medium w-24">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        <?php foreach($unsur_list as $row): ?>
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors">
-                            <td class="px-4 py-3 align-top">
-                                <span class="font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md border border-indigo-100 dark:border-indigo-900/50 whitespace-nowrap">
-                                    <?= htmlspecialchars($row['kode']) ?>
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 align-top"><?= htmlspecialchars($row['tugas_utama']) ?></td>
-                            <td class="px-4 py-3 align-top"><?= htmlspecialchars($row['judul']) ?></td>
-                            <td class="px-4 py-3 align-top flex gap-2">
-                                <button onclick='fillEdit("edit_unsur", <?= json_encode($row) ?>)' class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                                <form method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
-                                    <input type="hidden" name="action" value="delete_unsur">
-                                    <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
-                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><i data-lucide="trash" class="w-4 h-4"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <?php elseif ($active_tab === 'indikator'): ?>
-        <div class="flex flex-col gap-4">
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 flex flex-wrap justify-between items-center gap-4">
-                <div class="flex flex-wrap items-center gap-6">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Indikator Kerja</h2>
-                        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Total <?= count($indikator_list) ?> Data</p>
-                    </div>
-                    
-                    <div class="flex items-center gap-3 md:border-l md:border-slate-200 dark:md:border-slate-800 md:pl-6">
-                        <div class="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400 hidden sm:block">
-                            <i data-lucide="filter" class="w-4 h-4"></i>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5 ml-1">Filter Unsur</label>
-                            <div class="flex items-center gap-2">
-                                <select 
-                                    onchange="location.href='?tab=indikator&f_unsur=' + this.value" 
-                                    class="border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-950 font-semibold text-slate-700 dark:text-slate-300 min-w-[200px] max-w-xs"
-                                >
-                                    <option value="">Semua Unsur</option>
-                                    <?php 
-                                    $all_unsur_res = $conn->query("SELECT * FROM unsur_tugas_utama ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED)");
-                                    while($u = $all_unsur_res->fetch_assoc()): 
-                                    ?>
-                                    <option value="<?= $u['kode'] ?>" <?= (string)$f_unsur === (string)$u['kode'] ? 'selected' : '' ?>>
-                                        <?= $u['kode'] ?> - <?= htmlspecialchars(substr($u['judul'], 0, 40)) ?>...
-                                    </option>
-                                    <?php endwhile; ?>
-                                </select>
-                                <?php if($f_unsur): ?>
-                                    <a href="?tab=indikator" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-md transition-colors" title="Hapus Filter">
-                                        <i data-lucide="x-circle" class="w-4 h-4"></i>
-                                    </a>
-                                <?php endif; ?>
+                    <div class="col-md-6">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <i class="bi bi-funnel text-primary"></i>
+                            </div>
+                            <div class="col">
+                                <label class="form-label small fw-bold">Filter Tugas Utama</label>
+                                <div class="input-group">
+                                    <select 
+                                        onchange="location.href='?tab=unsur&f_tugas=' + this.value" 
+                                        class="form-select"
+                                    >
+                                        <option value="">Semua Tugas</option>
+                                        <?php foreach($tugas_list as $t): ?>
+                                        <option value="<?= $t['kode'] ?>" <?= (string)$f_tugas === (string)$t['kode'] ? 'selected' : '' ?>>
+                                            Tugas <?= $t['kode'] ?>: <?= htmlspecialchars(substr($t['judul'], 0, 40)) ?>...
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <?php if($f_tugas): ?>
+                                        <a href="?tab=unsur" class="btn btn-outline-danger" title="Hapus Filter">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <button 
-                    onclick="cancelEdit('add_indikator'); openModal('modal_indikator')"
-                    class="bg-indigo-600 dark:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-lg shadow-indigo-100 dark:shadow-none transition-all flex items-center gap-2"
-                >
-                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                    Tambah Indikator
-                </button>
             </div>
+        </div>
 
-            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-300 dark:border-slate-800 overflow-auto max-h-[700px] custom-scrollbar">
-                <table class="w-full text-left text-sm min-w-[600px]">
-                    <thead class="bg-slate-50 dark:bg-slate-950 border-b border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-400">
-                        <tr>
-                            <th class="px-6 py-4 font-bold">Kode</th>
-                            <th class="px-6 py-4 font-bold">Unsur</th>
-                            <th class="px-6 py-4 font-bold">Judul Indikator</th>
-                            <th class="px-6 py-4 font-bold">Data Kinerja</th>
-                            <th class="px-6 py-4 font-bold w-24">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        <?php foreach($indikator_list as $row): ?>
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors">
-                            <td class="px-6 py-4 align-top">
-                                <span class="font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md border border-indigo-100 dark:border-indigo-900/50 whitespace-nowrap text-xs">
-                                    <?= htmlspecialchars($row['kode']) ?>
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 align-top font-medium text-slate-700 dark:text-slate-300"><?= htmlspecialchars($row['unsur_tugas_utama']) ?></td>
-                            <td class="px-6 py-4 align-top text-slate-700 dark:text-slate-300 leading-relaxed"><?= htmlspecialchars($row['judul']) ?></td>
-                            <td class="px-6 py-4 align-top text-slate-500 dark:text-slate-500 italic text-xs leading-relaxed"><?= htmlspecialchars($row['data_kinerja']) ?></td>
-                            <td class="px-6 py-4 align-top flex gap-3">
-                                <button onclick='fillEdit("edit_indikator", <?= json_encode($row) ?>)' class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1 bg-blue-50 dark:bg-blue-900/30 rounded" title="Edit">
-                                    <i data-lucide="edit" class="w-4 h-4"></i>
-                                </button>
-                                <form method="POST" onsubmit="return confirm('Yakin hapus indikator ini?')">
-                                    <input type="hidden" name="action" value="delete_indikator">
-                                    <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
-                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 p-1 bg-red-50 dark:bg-red-900/30 rounded" title="Hapus">
-                                        <i data-lucide="trash" class="w-4 h-4"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0">Form Unsur Tugas</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <input type="hidden" name="action" id="form_action" value="add_unsur">
+                            <div class="mb-3">
+                                <label for="input_kode" class="form-label">Kode</label>
+                                <input type="text" name="kode" id="input_kode" required class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label for="input_tugas_utama" class="form-label">Tugas Utama</label>
+                                <select name="tugas_utama" id="input_tugas_utama" required class="form-select">
+                                    <option value="">-- Pilih --</option>
+                                    <?php foreach($tugas_list as $t): ?>
+                                    <option value="<?= $t['kode'] ?>"><?= $t['kode'] ?> - <?= htmlspecialchars(substr($t['judul'], 0, 30)) ?>...</option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="input_judul" class="form-label">Judul Unsur</label>
+                                <textarea name="judul" id="input_judul" required rows="3" class="form-control"></textarea>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" id="form_submit_btn" class="btn btn-primary flex-fill">Tambah Data</button>
+                                <button type="button" id="form_cancel_btn" onclick="cancelEdit('add_unsur')" class="btn btn-secondary" style="display: none;">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0">Daftar Unsur Tugas</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive custom-scrollbar" style="max-height: 600px;">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Kode</th>
+                                        <th>Tugas</th>
+                                        <th>Judul</th>
+                                        <th style="width: 120px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($unsur_list as $row): ?>
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-indigo">
+                                                <?= htmlspecialchars($row['kode']) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= htmlspecialchars($row['tugas_utama']) ?></td>
+                                        <td><?= htmlspecialchars($row['judul']) ?></td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button onclick='fillEdit("edit_unsur", <?= json_encode($row) ?>)' class="btn btn-sm btn-outline-primary" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form method="POST" onsubmit="return confirm('Yakin hapus data ini?')" style="display: inline;">
+                                                    <input type="hidden" name="action" value="delete_unsur">
+                                                    <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <?php elseif ($active_tab === 'indikator'): ?>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-1">Indikator Kerja</h5>
+                        <small class="text-muted">Total <?= count($indikator_list) ?> Data</small>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <i class="bi bi-funnel text-primary"></i>
+                            </div>
+                            <div class="col">
+                                <label class="form-label small fw-bold">Filter Unsur</label>
+                                <div class="input-group">
+                                    <select 
+                                        onchange="location.href='?tab=indikator&f_unsur=' + this.value" 
+                                        class="form-select"
+                                    >
+                                        <option value="">Semua Unsur</option>
+                                        <?php 
+                                        $all_unsur_res = $conn->query("SELECT * FROM unsur_tugas_utama ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED)");
+                                        while($u = $all_unsur_res->fetch_assoc()): 
+                                        ?>
+                                        <option value="<?= $u['kode'] ?>" <?= (string)$f_unsur === (string)$u['kode'] ? 'selected' : '' ?>>
+                                            <?= $u['kode'] ?> - <?= htmlspecialchars(substr($u['judul'], 0, 40)) ?>...
+                                        </option>
+                                        <?php endwhile; ?>
+                                    </select>
+                                    <?php if($f_unsur): ?>
+                                        <a href="?tab=indikator" class="btn btn-outline-danger" title="Hapus Filter">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button 
+                            onclick="cancelEdit('add_indikator'); openModal('modal_indikator')"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Tambah Indikator
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive custom-scrollbar" style="max-height: 700px;">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Unsur</th>
+                                <th>Judul Indikator</th>
+                                <th>Data Kinerja</th>
+                                <th style="width: 120px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($indikator_list as $row): ?>
+                            <tr>
+                                <td>
+                                    <span class="badge badge-indigo small">
+                                        <?= htmlspecialchars($row['kode']) ?>
+                                    </span>
+                                </td>
+                                <td><?= htmlspecialchars($row['unsur_tugas_utama']) ?></td>
+                                <td><?= htmlspecialchars($row['judul']) ?></td>
+                                <td><small class="text-muted"><?= htmlspecialchars($row['data_kinerja']) ?></small></td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button onclick='fillEdit("edit_indikator", <?= json_encode($row) ?>)' class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <form method="POST" onsubmit="return confirm('Yakin hapus indikator ini?')" style="display: inline;">
+                                            <input type="hidden" name="action" value="delete_indikator">
+                                            <input type="hidden" name="kode" value="<?= $row['kode'] ?>">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <?php endif; ?>
@@ -502,83 +657,53 @@ $active_tab = $_GET['tab'] ?? 'tugas';
     </div>
 
     <!-- Modal Form Indikator Kerja -->
-    <div id="modal_indikator" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div class="bg-slate-50 dark:bg-slate-950 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Form Indikator Kerja</h2>
-                <button onclick="closeModal('modal_indikator')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <form method="POST" class="p-6">
-                <input type="hidden" name="action" id="form_action" value="add_indikator">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Kode Indikator</label>
-                        <input type="text" name="kode" id="input_kode" placeholder="Contoh: 1.1.1" required class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-950 text-slate-800 dark:text-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Unsur Tugas Utama</label>
-                        <select name="unsur_tugas_utama" id="input_unsur_tugas_utama" required class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white">
-                            <option value="">-- Pilih Unsur --</option>
-                            <?php foreach($unsur_list as $u): ?>
-                            <option value="<?= $u['kode'] ?>"><?= $u['kode'] ?> - <?= htmlspecialchars(substr($u['judul'], 0, 50)) ?>...</option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Judul Indikator</label>
-                        <textarea name="judul" id="input_judul" required rows="2" placeholder="Masukkan deskripsi indikator..." class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-950 text-slate-800 dark:text-white"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Data Kinerja yang Diharapkan</label>
-                        <textarea name="data_kinerja" id="input_data_kinerja" rows="3" placeholder="Dokumen atau bukti yang diperlukan..." class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-950 text-slate-800 dark:text-white"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-400 mb-1.5">Bukti Otentik Kualitas Kinerja</label>
-                        <textarea name="bukti_otentik" id="input_bukti_otentik" rows="3" placeholder="Masukkan bukti otentik kualitas kinerja..." class="w-full border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-slate-950 text-slate-800 dark:text-white"></textarea>
-                    </div>
+    <div class="modal fade" id="modal_indikator" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header card-header-custom">
+                    <h5 class="modal-title">Form Indikator Kerja</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="mt-8 flex gap-3">
-                    <button type="button" onclick="closeModal('modal_indikator')" class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Batal</button>
-                    <button type="submit" id="form_submit_btn" class="flex-1 bg-indigo-600 dark:bg-indigo-500 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-lg shadow-indigo-200 dark:shadow-none transition-all">Simpan Data</button>
-                </div>
-            </form>
+            <form method="POST" class="modal-body">
+    <input type="hidden" name="action" id="form_action" value="add_indikator">
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="input_kode" class="form-label">Kode Indikator</label>
+            <input type="text" name="kode" id="input_kode" placeholder="Contoh: 1.1.1" required class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="input_unsur_tugas_utama" class="form-label">Unsur Tugas Utama</label>
+            <select name="unsur_tugas_utama" id="input_unsur_tugas_utama" required class="form-select">
+                <option value="">-- Pilih Unsur --</option>
+                <?php foreach($unsur_list as $u): ?>
+                <option value="<?= $u['kode'] ?>"><?= $u['kode'] ?> - <?= htmlspecialchars(substr($u['judul'], 0, 50)) ?>...</option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-12 mb-3">
+            <label for="input_judul" class="form-label">Judul Indikator</label>
+            <textarea name="judul" id="input_judul" required rows="2" placeholder="Masukkan deskripsi indikator..." class="form-control"></textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="input_data_kinerja" class="form-label">Data Kinerja yang Diharapkan</label>
+            <textarea name="data_kinerja" id="input_data_kinerja" rows="3" placeholder="Dokumen atau bukti yang diperlukan..." class="form-control"></textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="input_bukti_otentik" class="form-label">Bukti Otentik Kualitas Kinerja</label>
+            <textarea name="bukti_otentik" id="input_bukti_otentik" rows="3" placeholder="Masukkan bukti otentik kualitas kinerja..." class="form-control"></textarea>
         </div>
     </div>
-
+</form>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+    <button type="submit" form="modal_indikator" class="btn btn-primary">Simpan Data</button>
+</div>
+            </div>
+        </div>
     </div>
-    <script>
-        lucide.createIcons();
-        
-        function updateThemeIcon() {
-            const icon = document.getElementById('theme-icon');
-            if (document.documentElement.classList.contains('dark')) {
-                icon.setAttribute('data-lucide', 'sun');
-            } else {
-                icon.setAttribute('data-lucide', 'moon');
-            }
-            lucide.createIcons();
-        }
+    </div>
 
-        function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-            updateThemeIcon();
-        }
-
-        // Initialize icon on load
-        document.addEventListener('DOMContentLoaded', updateThemeIcon);
-
-        // Mempertahankan tab setelah submit
-        if(window.history.replaceState) {
-            window.history.replaceState(null, null, window.location.href);
-        }
-    </script>
-</body>
-</html>
+<?php
+require_once 'includes/footer.php';
+$conn->close();
+?>
