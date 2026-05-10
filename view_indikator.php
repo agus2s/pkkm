@@ -19,13 +19,14 @@ $username = $_SESSION['username'] ?? '';
 // Handle form submission FIRST (before any output)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     $hasil_kerja = intval($_POST['hasil_kerja']);
+    $link_bukti = trim($_POST['link_bukti'] ?? '');
     $next_kode = $_POST['next_kode'] ?? '';
     
     // Update hasil_indikator table
-    $update_sql = "UPDATE hasil_indikator SET hasil_kerja = ?, updated_at = CURRENT_TIMESTAMP 
+    $update_sql = "UPDATE hasil_indikator SET hasil_kerja = ?, link_bukti = ?, updated_at = CURRENT_TIMESTAMP 
                    WHERE username = ? AND kode_indikator = ?";
     $update_stmt = $conn->prepare($update_sql);
-    $update_stmt->bind_param("iss", $hasil_kerja, $username, $kode_indikator);
+    $update_stmt->bind_param("isss", $hasil_kerja, $link_bukti, $username, $kode_indikator);
     
     if ($update_stmt->execute()) {
         $_SESSION['success'] = 'Data indikator berhasil diperbarui!';
@@ -46,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
 require_once 'includes/header.php';
 
 // Get current data for this indicator
-$sql = "SELECT hi.hasil_kerja, ik.judul, ik.data_kinerja, ik.bukti_otentik 
+$sql = "SELECT hi.hasil_kerja, hi.link_bukti, ik.judul, ik.data_kinerja, ik.bukti_otentik 
         FROM hasil_indikator hi 
         LEFT JOIN indikator_kerja ik ON hi.kode_indikator = ik.kode 
         WHERE hi.username = ? AND hi.kode_indikator = ?";
@@ -71,10 +72,14 @@ while ($t = $t_res->fetch_assoc()) {
     $u_res = $conn->query("SELECT * FROM unsur_tugas_utama WHERE tugas_utama = '{$t['kode']}' ORDER BY CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED)");
     while ($u = $u_res->fetch_assoc()) {
         $u_item = ['kode' => $u['kode'], 'judul' => $u['judul'], 'indicators' => []];
-        $i_res = $conn->query("SELECT kode, judul FROM indikator_kerja WHERE unsur_tugas_utama = '{$u['kode']}' ORDER BY 
-    CAST(SUBSTRING_INDEX(kode, '.', 1) AS UNSIGNED), 
-    CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 2), '.', -1) AS UNSIGNED), 
-    CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(kode, '.', 3), '.', -1) AS UNSIGNED)");
+        $i_res = $conn->query("SELECT ik.kode, ik.judul, hi.hasil_kerja 
+            FROM indikator_kerja ik 
+            LEFT JOIN hasil_indikator hi ON ik.kode = hi.kode_indikator AND hi.username = '$username'
+            WHERE ik.unsur_tugas_utama = '{$u['kode']}' 
+            ORDER BY 
+            CAST(SUBSTRING_INDEX(ik.kode, '.', 1) AS UNSIGNED), 
+            CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(ik.kode, '.', 2), '.', -1) AS UNSIGNED), 
+            CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(ik.kode, '.', 3), '.', -1) AS UNSIGNED)");
         while ($i = $i_res->fetch_assoc()) {
             $u_item['indicators'][] = $i;
         }
@@ -110,215 +115,9 @@ $prevCode = $currentIndex > 0 ? $all_codes[$currentIndex - 1] : null;
 $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1] : null;
 ?>
 
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Indikator - PKKM System</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <style>
-        .header-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .card-header-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .indicator-code {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 5rem;
-            height: 5rem;
-            border-radius: 1rem;
-            font-size: 2rem;
-            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-        }
-        
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5a67d8 0%, #6b3a8c 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-        }
-        
-        .btn-secondary {
-            background: #6b7280;
-            border: none;
-        }
-        
-        .btn-secondary:hover {
-            background: #4b5563;
-            transform: translateY(-2px);
-        }
-        
-        .rating-btn {
-            width: 60px;
-            height: 60px;
-            border: 2px solid #dee2e6;
-            background: white;
-            color: #6c757d;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .rating-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.15);
-        }
-        
-        .rating-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: #667eea;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(102, 126, 234, 0.25);
-        }
-        
-        .rating-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin: 2rem 0;
-        }
-        
-        .sidebar {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            overflow-y: auto;
-            max-height: calc(100vh - 2rem);
-        }
-        
-        .sidebar-header {
-            padding: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 0.5rem 0.5rem 0 0;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        
-        .sidebar-content {
-            padding: 1rem;
-        }
-        
-        .sidebar-tugas {
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 0.5rem;
-            padding: 0.5rem;
-            background: #f8f9fa;
-            border-radius: 0.5rem;
-            border-left: 4px solid #667eea;
-        }
-        
-        .sidebar-unsur {
-            font-weight: 500;
-            color: #6c757d;
-            margin-bottom: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .sidebar-indicators {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.25rem;
-            margin-left: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .sidebar-indicator-btn {
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #dee2e6;
-            background: white;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .sidebar-indicator-btn:hover {
-            background: #f8f9fa;
-            border-color: #667eea;
-        }
-        
-        .sidebar-indicator-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        
-        .indicator-btn {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            margin: 0.125rem;
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #6c757d;
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        
-        .indicator-btn:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
-            color: #495057;
-            transform: translateY(-1px);
-        }
-        
-        .indicator-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: #667eea;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.25);
-        }
-        
-        .indicators-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.25rem;
-            margin-left: 2rem;
-        }
-    </style>
-</head>
-<body>  
-    <div class="container-fluid p-4">
-        <div class="row g-4">
+
+
+        <div class="row g-4 p-4">
             <!-- Sidebar -->
             <div class="col-md-4 col-lg-3">
                 <div class="sidebar">
@@ -336,7 +135,7 @@ $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1
                                     </div>
                                     <div class="sidebar-indicators">
                                         <?php foreach ($u['indicators'] as $i): ?>
-                                            <button class="sidebar-indicator-btn <?php echo ($i['kode'] === $kode_indikator) ? 'active' : ''; ?>"
+                                            <button class="sidebar-indicator-btn <?php echo ($i['kode'] === $kode_indikator) ? 'active' : ''; ?> <?php echo ($i['hasil_kerja'] > 0) ? 'filled' : ''; ?>"
                                                     onclick="navigateToIndicator('<?php echo $i['kode']; ?>')">
                                                 <?php echo $i['kode']; ?>
                                             </button>
@@ -371,7 +170,7 @@ $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1
                         <!-- Indicator Info -->
                         <div class="row mb-4">
                             <div class="col-md-3 text-center">
-                                <div class="indicator-code">
+                                <div class="indicator-code <?php echo ($indikator_data['hasil_kerja'] > 0) ? 'filled' : ''; ?>">
                                     <?php echo htmlspecialchars($kode_indikator); ?>
                                 </div>
                             </div>
@@ -415,28 +214,64 @@ $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1
                         <!-- Form -->
                         <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'] . '?kode=' . urlencode($kode_indikator)); ?>">
                             <div class="row">
-                                <div class="col-12 mb-4">
-                                    <label class="form-label fw-bold text-center d-block mb-3">
-                                        <i class="bi bi-star me-1"></i>
-                                        Pilih Rating Hasil Kerja
-                                    </label>
-                                    <div class="rating-group">
-                                        <?php for ($i = 1; $i <= 4; $i++): ?>
-                                            <button type="button" 
-                                                    class="rating-btn <?php echo ($indikator_data['hasil_kerja'] == $i) ? 'active' : ''; ?>" 
-                                                    data-rating="<?php echo $i; ?>"
-                                                    onclick="selectRating(<?php echo $i; ?>)">
-                                                <?php echo $i; ?>
-                                            </button>
-                                        <?php endfor; ?>
+                                <div class="col-12 px-4">
+                                    <!-- Link Bukti First -->
+                                    <div class="card bg-light border-0 mb-5">
+                                        <div class="card-body p-4">
+                                            <label class="form-label fw-bold mb-3">
+                                                <i class="bi bi-link-45deg me-1"></i>
+                                                Link Google Drive Bukti Kinerja
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white text-primary border-0 shadow-sm">
+                                                    <i class="bi bi-google"></i>
+                                                </span>
+                                                <input type="url" 
+                                                       class="form-control border-0 shadow-sm py-2" 
+                                                       id="link_bukti" 
+                                                       name="link_bukti" 
+                                                       placeholder="https://drive.google.com/drive/folders/..."
+                                                       value="<?php echo htmlspecialchars($indikator_data['link_bukti'] ?? ''); ?>"
+                                                       onchange="autoSaveLink()">
+                                                <?php if (!empty($indikator_data['link_bukti'])): ?>
+                                                    <a href="<?php echo htmlspecialchars($indikator_data['link_bukti']); ?>" 
+                                                       target="_blank" 
+                                                       class="btn btn-white border-0 shadow-sm px-3"
+                                                       title="Buka Link">
+                                                        <i class="bi bi-box-arrow-up-right text-primary"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="text-muted mt-2">
+                                                <small><i class="bi bi-info-circle me-1"></i>Pastikan akses link diatur "Siapa saja dengan link dapat melihat"</small>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <input type="hidden" 
-                                           id="hasil_kerja" 
-                                           name="hasil_kerja" 
-                                           value="<?php echo htmlspecialchars($indikator_data['hasil_kerja']); ?>" 
-                                           required>
-                                    <div class="text-center text-muted">
-                                        <small>Pilih rating dari 1 (terendah) hingga 4 (tertinggi)</small>
+
+                                    <!-- Rating Selection Second -->
+                                    <div class="rating-section bg-white rounded-3 p-4 border mb-4">
+                                        <label class="form-label fw-bold text-center d-block mb-4">
+                                            <i class="bi bi-star me-1"></i>
+                                            Pilih Rating Hasil Kerja
+                                        </label>
+                                        <div class="rating-group mb-3">
+                                            <?php for ($i = 1; $i <= 4; $i++): ?>
+                                                <button type="button" 
+                                                        class="rating-btn <?php echo ($indikator_data['hasil_kerja'] == $i) ? 'active' : ''; ?>" 
+                                                        data-rating="<?php echo $i; ?>"
+                                                        onclick="selectRating(<?php echo $i; ?>)">
+                                                    <?php echo $i; ?>
+                                                </button>
+                                            <?php endfor; ?>
+                                        </div>
+                                        <input type="hidden" 
+                                               id="hasil_kerja" 
+                                               name="hasil_kerja" 
+                                               value="<?php echo htmlspecialchars($indikator_data['hasil_kerja']); ?>" 
+                                               required>
+                                        <div class="text-center text-muted">
+                                            <small>Pilih rating dari 1 (terendah) hingga 4 (tertinggi)</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -486,31 +321,19 @@ $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1
                                             Selesai
                                         </a>
                                     <?php endif; ?>
-                                </div>
-                            </div>
                             </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Auto-save Status Container -->
-    <div id="save-status" style="display: none;"></div>
-                </div>
-            </div>
-        </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-        
-        function navigateToIndicator(kode) {
+                    </div> <!-- card-body -->
+                </div> <!-- card shadow -->
+            </div> <!-- col-12 -->
+        </div> <!-- row inside main content -->
+    </div> <!-- col-md-8 col-lg-9 -->
+</div> <!-- main row g-4 -->
+
+<!-- Auto-save Status Container -->
+<div id="save-status" style="display: none;"></div>
+
+<script>
+    function navigateToIndicator(kode) {
             window.location.href = '?kode=' + kode;
         }
         
@@ -527,13 +350,21 @@ $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1
             document.getElementById('hasil_kerja').value = rating;
             
             // Auto-save
-            autoSaveRating(rating);
+            autoSaveAll();
         }
         
-        function autoSaveRating(rating) {
+        function autoSaveLink() {
+            autoSaveAll();
+        }
+        
+        function autoSaveAll() {
+            const rating = document.getElementById('hasil_kerja').value;
+            const link = document.getElementById('link_bukti').value;
+            
             const formData = new FormData();
             formData.append('code', '<?php echo $kode_indikator; ?>');
             formData.append('score', rating);
+            formData.append('link_bukti', link);
             
             // Show saving indicator
             showSaveStatus('Menyimpan...', 'warning');

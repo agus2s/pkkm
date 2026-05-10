@@ -125,121 +125,10 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - PKKM System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        
-        .form-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .form-header h2 {
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e1e1e1;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 0.75rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        .toggle-form {
-            text-align: center;
-            margin-top: 1.5rem;
-        }
-        
-        .toggle-form a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        
-        .toggle-form a:hover {
-            text-decoration: underline;
-        }
-        
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 0.75rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            border: 1px solid #fcc;
-        }
-        
-        .success {
-            background: #efe;
-            color: #3c3;
-            padding: 0.75rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            border: 1px solid #cfc;
-        }
-        
-        .registration-fields {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/login.css">
 </head>
 <body>
-    <div class="container">
+    <div class="login-container">
         <div class="form-header">
             <h2 id="form-title">Login PKKM</h2>
             <p id="form-subtitle">Silakan masuk ke akun Anda</p>
@@ -247,11 +136,11 @@ $conn->close();
         
         <?php
         if (isset($_SESSION['error'])) {
-            echo '<div class="error">' . $_SESSION['error'] . '</div>';
+            echo '<div class="alert error">' . $_SESSION['error'] . '</div>';
             unset($_SESSION['error']);
         }
         if (isset($_SESSION['success'])) {
-            echo '<div class="success">' . $_SESSION['success'] . '</div>';
+            echo '<div class="alert success">' . $_SESSION['success'] . '</div>';
             unset($_SESSION['success']);
         }
         ?>
@@ -267,7 +156,7 @@ $conn->close();
                 <input type="password" id="password" name="password" required>
             </div>
             
-            <div class="registration-fields" id="registration-fields">
+            <div class="registration-fields" id="registration-fields" style="display: none;">
                 <div class="form-group">
                     <label for="nama_madrasah">Nama Madrasah</label>
                     <input type="text" id="nama_madrasah" name="nama_madrasah">
@@ -289,7 +178,7 @@ $conn->close();
                 </div>
             </div>
             
-            <button type="submit" name="submit" class="btn" id="submit-btn">Login</button>
+            <button type="submit" name="submit" class="login-btn" id="submit-btn">Login</button>
         </form>
         
         <div class="toggle-form">

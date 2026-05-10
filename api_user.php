@@ -17,16 +17,17 @@ $action = $_GET['action'] ?? 'get';
 if ($action === 'save_score') {
     $kode = $conn->real_escape_string($_POST['code'] ?? '');
     $score = (int)($_POST['score'] ?? 0);
+    $link = $_POST['link_bukti'] ?? '';
     
     if ($kode) {
         // Update hasil_indikator table for current user
-        $stmt = $conn->prepare("UPDATE hasil_indikator SET hasil_kerja = ?, updated_at = CURRENT_TIMESTAMP WHERE username = ? AND kode_indikator = ?");
-        $stmt->bind_param("iss", $score, $username, $kode);
+        $stmt = $conn->prepare("UPDATE hasil_indikator SET hasil_kerja = ?, link_bukti = ?, updated_at = CURRENT_TIMESTAMP WHERE username = ? AND kode_indikator = ?");
+        $stmt->bind_param("isss", $score, $link, $username, $kode);
         
         if ($stmt->execute()) {
             echo json_encode(["status" => "success"]);
         } else {
-            echo json_encode(["status" => "error", "message" => "Failed to update score"]);
+            echo json_encode(["status" => "error", "message" => "Failed to update record"]);
         }
         $stmt->close();
     } else {

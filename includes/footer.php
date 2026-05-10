@@ -1,7 +1,6 @@
 </div>
 
-    <!-- Navigation Overlay -->
-    <div id="nav-overlay" class="nav-overlay" onclick="toggleDrawer()"></div>
+</div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -44,28 +43,6 @@
             toastElement.addEventListener('hidden.bs.toast', () => {
                 toastElement.remove();
             });
-        }
-
-        // Navigation drawer functions
-        function toggleDrawer() {
-            const drawer = document.getElementById('nav-drawer');
-            const overlay = document.getElementById('nav-overlay');
-            
-            if (drawer.classList.contains('open')) {
-                drawer.classList.remove('open');
-                overlay.classList.remove('show');
-            } else {
-                drawer.classList.add('open');
-                overlay.classList.add('show');
-            }
-        }
-
-        function closeDrawer() {
-            const drawer = document.getElementById('nav-drawer');
-            const overlay = document.getElementById('nav-overlay');
-            
-            drawer.classList.remove('open');
-            overlay.classList.remove('show');
         }
 
         // Auto-save functionality for indicators

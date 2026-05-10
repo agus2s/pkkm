@@ -96,7 +96,7 @@ require_once 'includes/header.php';
                 ];
                 
                 // Get indicators with user scores for this unsur
-                $i_sql = "SELECT hi.kode_indikator, hi.hasil_kerja, ik.judul, ik.data_kinerja 
+                $i_sql = "SELECT hi.kode_indikator, hi.hasil_kerja, hi.link_bukti, ik.judul, ik.data_kinerja 
                           FROM hasil_indikator hi 
                           LEFT JOIN indikator_kerja ik ON hi.kode_indikator = ik.kode 
                           WHERE hi.username = ? AND ik.unsur_tugas_utama = ? 
@@ -281,6 +281,12 @@ require_once 'includes/header.php';
                                                                             <?php else: ?>
                                                                                 <span class="status-badge status-empty">
                                                                                     <i class="bi bi-circle me-1"></i>Kosong
+                                                                                </span>
+                                                                            <?php endif; ?>
+                                                                            
+                                                                            <?php if (!empty($i['link_bukti'])): ?>
+                                                                                <span class="ms-1 text-primary" title="Link Bukti Tersedia">
+                                                                                    <i class="bi bi-google"></i>
                                                                                 </span>
                                                                             <?php endif; ?>
                                                                         </div>
