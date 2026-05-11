@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         }
         
         // Check user credentials
-        $sql = "SELECT id, username, password, nama_madrasah FROM users WHERE username = ?";
+        $sql = "SELECT id, username, password, nama_penilai, nama_madrasah FROM users WHERE username = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $username);
         $stmt->execute();
@@ -104,6 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['nama_madrasah'] = $user['nama_madrasah'];
+                $_SESSION['nama_penilai'] = $user['nama_penilai'];
                 
                 header('Location: dashboard.php');
                 exit;

@@ -9,6 +9,7 @@ if (!isset($_SESSION['username'])) {
 }
 
 $username = $_SESSION['username'];
+$nama_penilai = $_SESSION['nama_penilai'];
 $nama_madrasah = $_SESSION['nama_madrasah'];
 ?>
 <!DOCTYPE html>
@@ -25,6 +26,14 @@ $nama_madrasah = $_SESSION['nama_madrasah'];
     
     <!-- Custom Styles -->
     <link rel="stylesheet" href="assets/css/style.css">
+    
+    <script>
+        // Check for saved theme preference or use light as default
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
 </head>
 <body>
     <!-- Header -->
@@ -58,7 +67,7 @@ $nama_madrasah = $_SESSION['nama_madrasah'];
                                         <p class="fw-bold mb-0"><?php echo htmlspecialchars($username); ?></p>
                                         <p class="text-primary small mb-0 mt-1">
                                             <i class="bi bi-building me-1"></i>
-                                            <?php echo htmlspecialchars($nama_madrasah); ?>
+                                            <?php echo htmlspecialchars($nama_penilai); ?>
                                         </p>
                                     </div>
                                 </li>
@@ -80,6 +89,18 @@ $nama_madrasah = $_SESSION['nama_madrasah'];
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
+                                    <div class="dropdown-item py-2 d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-moon-stars me-2"></i>
+                                            <span>Mode Gelap</span>
+                                        </div>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input cursor-pointer" type="checkbox" id="darkModeToggle" style="width: 2.5em;">
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
                                     <a class="dropdown-item py-2 text-danger" href="logout.php">
                                         <i class="bi bi-box-arrow-right me-2"></i>Keluar Aplikasi
                                     </a>
@@ -96,3 +117,26 @@ $nama_madrasah = $_SESSION['nama_madrasah'];
     <div class="toast-container"></div>
 
     <div class="container-fluid">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+    
+    // Set initial toggle state
+    if (currentTheme === 'dark') {
+        darkModeToggle.checked = true;
+    }
+    
+    // Handle theme toggle
+    darkModeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+            localStorage.setItem('theme', 'light');
+        }
+    });
+});
+</script>

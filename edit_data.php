@@ -237,18 +237,8 @@ $active_tab = $_GET['tab'] ?? 'tugas';
 </script>
 
     <div class="container py-4">
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h1 class="h3 mb-1">Editor Instrumen PKKM</h1>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="mb-4">
+            <h1 class="h3 mb-1">Editor Instrumen PKKM</h1>
         </div>
 
         <?php if ($message): ?>

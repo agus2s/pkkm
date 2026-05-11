@@ -154,9 +154,8 @@ $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1
                     <div class="col-12">
                         <div class="card shadow">
                     <div class="card-header card-header-custom">
-                        <h3 class="h5 mb-0">
-                            <i class="bi bi-clipboard-data me-2"></i>
-                            Edit Data Indikator
+                        <h3 class="h5 mb-0">                            
+                            Penilaian Indikator Kerja
                         </h3>
                     </div>
                     <div class="card-body">
@@ -176,13 +175,11 @@ $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1
                             </div>
                             <div class="col-md-9">
                                 <h4 class="h5 text-primary">
-                                    <i class="bi bi-info-circle me-2"></i>
                                     <?php echo htmlspecialchars($indikator_data['judul'] ?? 'Tidak tersedia'); ?>
                                 </h4>
                                 <div class="mb-3">
-                                    <span class="badge bg-secondary text-white">
-                                        <i class="bi bi-database me-1"></i>
-                                        Data Kinerja
+                                    <span class="badge bg-secondary text-white">                                        
+                                        Data Kinerja yang Diharapkan
                                     </span>
                                 </div>
                                 <p class="text-muted fst-italic">
@@ -197,11 +194,7 @@ $nextCode = $currentIndex < count($all_codes) - 1 ? $all_codes[$currentIndex + 1
                                 <h5 class="h6 text-primary mb-3">
                                     <i class="bi bi-shield-check me-2"></i>
                                     Bukti Otentik Kualitas Kinerja
-                                </h5>
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Informasi bukti otentik yang diperlukan
-                                </div>
+                                </h5>                                
                                 <div class="bg-white p-3 rounded border">
                                     <?php 
                                     $formatted_evidence = preg_replace('/^\((\d+)\)/m', '🔵 $1.', $indikator_data['bukti_otentik'] ?? 'Tidak tersedia');

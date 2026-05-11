@@ -61,8 +61,8 @@ require_once 'includes/header.php';
                     </div>
                     <div class="col-md-6">
                         <div class="p-3 bg-light rounded border-start border-4 border-primary">
-                            <small class="text-muted d-block">Nama Madrasah</small>
-                            <strong><?php echo htmlspecialchars($_SESSION['nama_madrasah']); ?></strong>
+                            <small class="text-muted d-block">Nama Penilai</small>
+                            <strong><?php echo htmlspecialchars($_SESSION['nama_penilai']); ?></strong>
                         </div>
                     </div>
                 </div>
@@ -320,7 +320,7 @@ require_once 'includes/header.php';
                         </div>
                         <h5 class="card-title">Input Hasil Indikator</h5>
                         <p class="card-text text-muted">Masukkan data hasil kerja untuk setiap indikator PKKM</p>
-                        <a href="input_hasil.php" class="btn btn-primary">
+                        <a href="view_indikator.php?kode=1.1.1" class="btn btn-primary">
                             <i class="bi bi-plus-circle me-1"></i>Input Data
                         </a>
                     </div>
